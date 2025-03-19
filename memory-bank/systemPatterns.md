@@ -22,7 +22,7 @@ flowchart TD
 
 ## Implementation Status
 - **Pattern Manager**: ✅ Implemented
-- **File Scanner**: 🔄 In Progress
+- **File Scanner**: ✅ Implemented
 - **Code Extractor**: 🔄 In Progress
 - **LLM Client**: 🔄 In Progress
 - **Security Analyzer**: ⏳ Pending
@@ -41,6 +41,16 @@ flowchart TD
 4. Code is analyzed by LLM for security vulnerabilities
 5. Results are verified across multiple security aspects
 6. Comprehensive report is generated with findings and recommendations
+
+## File Scanning
+The File Scanner component has been implemented with the following features:
+- Recursive directory traversal for finding target files
+- File extension to language mapping
+- Regular expression pattern matching for vulnerability detection
+- Line number and context tracking for identified vulnerabilities
+- Detailed vulnerability reporting with descriptions
+- Support for both language-specific and framework-specific patterns
+- Error handling for file access and encoding issues
 
 ## Pattern Management
 The Pattern Manager component has been implemented with the following features:

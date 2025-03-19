@@ -13,8 +13,8 @@ from typing import List, Dict, Any, Optional
 
 # Import local modules
 from src.pattern_manager import PatternManager
+from src.file_scanner import FileScanner
 # These modules will be implemented later
-# from src.file_scanner import FileScanner
 # from src.code_extractor import CodeExtractor
 # from src.llm.client import get_llm_client
 # from src.analyzer import SecurityAnalyzer
@@ -129,9 +129,9 @@ def main() -> int:
     except ImportError:
         logger.warning("python-dotenv not installed. Using environment variables as is.")
     
-    # Validate environment
-    if not validate_environment():
-        return 1
+    # Validate environment (temporarily disabled for file scanner testing)
+    # if not validate_environment():
+    #     return 1
     
     # Log startup information
     logger.info(f"Starting GrepIntel security scan on {args.target}")
@@ -144,19 +144,19 @@ def main() -> int:
     try:
         pattern_manager = PatternManager()
         
-        # 言語パターンのロード
+        # Load language patterns
         languages_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'intelligence', 'languages')
         logger.info(f"Loading language patterns from {languages_dir}")
         
         if os.path.exists(languages_dir):
             if args.language == 'all':
-                # すべての言語パターンをロード
+                # Load patterns for all languages
                 for language in FILE_EXTENSIONS.keys():
                     language_file = os.path.join(languages_dir, f"{language}.txt")
                     if os.path.exists(language_file):
                         pattern_manager.load_language_patterns(language_file, language)
             else:
-                # 指定された言語のパターンをロード
+                # Load patterns for the specified language
                 language_file = os.path.join(languages_dir, f"{args.language}.txt")
                 if os.path.exists(language_file):
                     pattern_manager.load_language_patterns(language_file, args.language)
@@ -166,7 +166,7 @@ def main() -> int:
             logger.error(f"Languages directory not found: {languages_dir}")
             return 1
         
-        # フレームワークパターンのロード（指定されている場合）
+        # Load framework patterns (if specified)
         if args.framework:
             framework_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'intelligence', 'frameworks')
             logger.info(f"Loading framework patterns for {args.framework}")
@@ -174,7 +174,7 @@ def main() -> int:
             if os.path.exists(framework_dir):
                 framework_file = os.path.join(framework_dir, f"{args.framework}.txt")
                 if os.path.exists(framework_file):
-                    # フレームワークに対応する言語を取得
+                    # Get the language corresponding to the framework
                     framework_language = FRAMEWORK_LANGUAGE_MAP.get(args.framework)
                     if framework_language:
                         pattern_manager.load_framework_patterns(framework_file, args.framework, framework_language)
@@ -185,27 +185,56 @@ def main() -> int:
             else:
                 logger.warning(f"Frameworks directory not found: {framework_dir}")
         
+        # Initialize file scanner
+        file_scanner = FileScanner(pattern_manager)
+        
+        # Run the security scan
+        logger.info("Scanning files for security vulnerabilities...")
+        scan_results = file_scanner.scan(args.target, args.language, args.framework)
+        
         # TODO: Implement the rest of the pipeline
-        # file_scanner = FileScanner(pattern_manager)
         # code_extractor = CodeExtractor()
         # llm_client = get_llm_client()
         # analyzer = SecurityAnalyzer(llm_client)
         # report_generator = ReportGenerator()
         
-        # TODO: Run the security scan
-        # scan_results = file_scanner.scan(args.target, args.language)
+        # TODO: Complete the analysis pipeline
         # extracted_code = code_extractor.extract(scan_results)
         # analysis_results = analyzer.analyze(extracted_code)
         # report_generator.generate(analysis_results, args.output, args.report_language)
         
-        logger.info("Scan completed successfully")
-        logger.info(f"Report saved to {args.output}")
+        # Log scan results
+        logger.info(f"Scan completed successfully. Scanned {scan_results['files_scanned']} files.")
+        logger.info(f"Found {scan_results['vulnerabilities_found']} potential vulnerabilities.")
         
-        # For now, just print a message
-        print(f"GrepIntel is still under development.")
-        print(f"Pattern manager loaded successfully with patterns for: {', '.join(pattern_manager.language_patterns.keys())}")
-        if pattern_manager.framework_patterns:
-            print(f"Framework patterns loaded: {', '.join(pattern_manager.framework_patterns.keys())}")
+        # Print scan summary
+        print(f"\nGrepIntel Scan Summary:")
+        print(f"------------------------")
+        print(f"Target: {scan_results['target_path']}")
+        print(f"Language: {scan_results['language']}")
+        if scan_results['framework']:
+            print(f"Framework: {scan_results['framework']}")
+        print(f"Files scanned: {scan_results['files_scanned']}")
+        print(f"Potential vulnerabilities found: {scan_results['vulnerabilities_found']}")
+        
+        # Print detailed results if any vulnerabilities were found
+        if scan_results['vulnerabilities_found'] > 0:
+            print(f"\nVulnerability Details:")
+            print(f"----------------------")
+            
+            for file_result in scan_results['results']:
+                print(f"\nFile: {file_result['file_path']}")
+                print(f"Language: {file_result['language']}")
+                if file_result['framework']:
+                    print(f"Framework: {file_result['framework']}")
+                print(f"Vulnerabilities: {len(file_result['matches'])}")
+                
+                for match in file_result['matches']:
+                    print(f"  - Line {match['line_number']}: {match['vulnerability_type']}")
+                    print(f"    Description: {match['description']}")
+                    print(f"    Code: {match['line_content']}")
+        
+        print(f"\nNote: GrepIntel is still under development. LLM-based analysis is not yet implemented.")
         
         return 0
     

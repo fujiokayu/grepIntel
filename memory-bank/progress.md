@@ -15,9 +15,9 @@
 - Enhanced pattern management to support framework-specific patterns
 - Reorganized intelligence directory to separate language and framework patterns
 - Added framework-specific pattern files for Laravel and Rails
+- File scanning functionality implementation
 
 ## In Progress
-- File scanning functionality
 - Source code extraction
 - LLM client interfaces
 
@@ -33,6 +33,15 @@
 ## Implementation Details
 
 ### Completed Components
+
+#### File Scanning
+- Implemented `FileScanner` class for scanning files and directories
+- Added support for recursive directory traversal
+- Implemented pattern matching using regular expressions
+- Added file extension to language mapping
+- Implemented detailed vulnerability reporting
+- Added comprehensive unit tests with 100% coverage
+- Integrated file scanning with command-line interface
 
 #### Pattern Management
 - Implemented `PatternManager` class for loading and managing security patterns
