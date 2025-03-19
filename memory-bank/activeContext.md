@@ -20,6 +20,9 @@
 - Added framework-specific pattern files for Laravel and Rails
 - Implemented file scanning functionality with pattern matching
 - Added comprehensive test suite for file scanner
+- Implemented source code extraction functionality
+- Added context-aware code extraction for identified vulnerabilities
+- Added LLM input formatting for future analysis
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -27,9 +30,10 @@
 3. ✅ Set up pytest framework with coverage reporting
 4. ✅ Implement pattern management for security grep patterns (TDD approach)
 5. ✅ Develop file scanning functionality
-6. Build LLM client interfaces
-7. Implement security analysis pipeline
-8. Create report generation system
+6. ✅ Implement source code extraction
+7. Build LLM client interfaces
+8. Implement security analysis pipeline
+9. Create report generation system
 
 ## Active Decisions
 - Using Python for implementation due to its rich ecosystem and simplicity

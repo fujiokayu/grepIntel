@@ -14,8 +14,8 @@ from typing import List, Dict, Any, Optional
 # Import local modules
 from src.pattern_manager import PatternManager
 from src.file_scanner import FileScanner
+from src.code_extractor import CodeExtractor
 # These modules will be implemented later
-# from src.code_extractor import CodeExtractor
 # from src.llm.client import get_llm_client
 # from src.analyzer import SecurityAnalyzer
 # from src.report_generator import ReportGenerator
@@ -185,27 +185,34 @@ def main() -> int:
             else:
                 logger.warning(f"Frameworks directory not found: {framework_dir}")
         
-        # Initialize file scanner
+        # Initialize components
         file_scanner = FileScanner(pattern_manager)
+        code_extractor = CodeExtractor()
         
         # Run the security scan
         logger.info("Scanning files for security vulnerabilities...")
         scan_results = file_scanner.scan(args.target, args.language, args.framework)
         
+        # Extract code from scan results
+        logger.info("Extracting code from identified vulnerabilities...")
+        extraction_results = code_extractor.extract(scan_results)
+        
+        # Format for LLM (for future use)
+        llm_input = code_extractor.format_for_llm(extraction_results)
+        
         # TODO: Implement the rest of the pipeline
-        # code_extractor = CodeExtractor()
         # llm_client = get_llm_client()
         # analyzer = SecurityAnalyzer(llm_client)
         # report_generator = ReportGenerator()
         
         # TODO: Complete the analysis pipeline
-        # extracted_code = code_extractor.extract(scan_results)
-        # analysis_results = analyzer.analyze(extracted_code)
+        # analysis_results = analyzer.analyze(llm_input)
         # report_generator.generate(analysis_results, args.output, args.report_language)
         
-        # Log scan results
+        # Log results
         logger.info(f"Scan completed successfully. Scanned {scan_results['files_scanned']} files.")
         logger.info(f"Found {scan_results['vulnerabilities_found']} potential vulnerabilities.")
+        logger.info(f"Extracted code from {extraction_results['files_processed']} files.")
         
         # Print scan summary
         print(f"\nGrepIntel Scan Summary:")
@@ -222,17 +229,21 @@ def main() -> int:
             print(f"\nVulnerability Details:")
             print(f"----------------------")
             
-            for file_result in scan_results['results']:
+            for file_result in extraction_results['results']:
                 print(f"\nFile: {file_result['file_path']}")
                 print(f"Language: {file_result['language']}")
                 if file_result['framework']:
                     print(f"Framework: {file_result['framework']}")
-                print(f"Vulnerabilities: {len(file_result['matches'])}")
+                print(f"Vulnerabilities: {len(file_result['extractions'])}")
                 
-                for match in file_result['matches']:
-                    print(f"  - Line {match['line_number']}: {match['vulnerability_type']}")
-                    print(f"    Description: {match['description']}")
-                    print(f"    Code: {match['line_content']}")
+                for extraction in file_result['extractions']:
+                    print(f"  - Line {extraction['line_number']}: {extraction['vulnerability_type']}")
+                    print(f"    Description: {extraction['description']}")
+                    print(f"    Code Context (lines {extraction['context']['start_line']}-{extraction['context']['end_line']}):")
+                    print(f"    ```")
+                    for line in extraction['context']['code'].splitlines():
+                        print(f"    {line}")
+                    print(f"    ```")
         
         print(f"\nNote: GrepIntel is still under development. LLM-based analysis is not yet implemented.")
         

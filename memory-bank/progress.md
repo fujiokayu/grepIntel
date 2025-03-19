@@ -16,9 +16,9 @@
 - Reorganized intelligence directory to separate language and framework patterns
 - Added framework-specific pattern files for Laravel and Rails
 - File scanning functionality implementation
+- Source code extraction functionality implementation
 
 ## In Progress
-- Source code extraction
 - LLM client interfaces
 
 ## Pending
@@ -33,6 +33,15 @@
 ## Implementation Details
 
 ### Completed Components
+
+#### Source Code Extraction
+- Implemented `CodeExtractor` class for extracting relevant code snippets
+- Added context-aware code extraction for identified vulnerabilities
+- Implemented configurable context window size
+- Added support for formatting extracted code for LLM input
+- Implemented token limit handling for LLM input
+- Added comprehensive unit tests with 100% coverage
+- Integrated code extraction with command-line interface
 
 #### File Scanning
 - Implemented `FileScanner` class for scanning files and directories

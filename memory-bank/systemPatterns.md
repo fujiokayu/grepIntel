@@ -23,7 +23,7 @@ flowchart TD
 ## Implementation Status
 - **Pattern Manager**: ✅ Implemented
 - **File Scanner**: ✅ Implemented
-- **Code Extractor**: 🔄 In Progress
+- **Code Extractor**: ✅ Implemented
 - **LLM Client**: 🔄 In Progress
 - **Security Analyzer**: ⏳ Pending
 - **Report Generator**: ⏳ Pending
@@ -41,6 +41,16 @@ flowchart TD
 4. Code is analyzed by LLM for security vulnerabilities
 5. Results are verified across multiple security aspects
 6. Comprehensive report is generated with findings and recommendations
+
+## Code Extraction
+The Code Extractor component has been implemented with the following features:
+- Context-aware code extraction from identified vulnerabilities
+- Configurable context window size for code snippets
+- Structured data representation of extracted code
+- LLM input formatting with token limit handling
+- Support for multiple programming languages
+- Error handling for file access and encoding issues
+- Integration with the file scanning pipeline
 
 ## File Scanning
 The File Scanner component has been implemented with the following features:
