@@ -1,0 +1,76 @@
+[ELOQUENT_INJECTION]
+description: Laravel Eloquent ORM SQL injection vulnerabilities
+patterns:
+- DB::raw\s*\(\s*.*\$.*\)
+- DB::select\s*\(\s*.*\$.*\)
+- DB::statement\s*\(\s*.*\$.*\)
+- DB::unprepared\s*\(\s*.*\$.*\)
+- Model::whereRaw\s*\(\s*.*\$.*\)
+- Model::havingRaw\s*\(\s*.*\$.*\)
+- Model::orderByRaw\s*\(\s*.*\$.*\)
+- Model::selectRaw\s*\(\s*.*\$.*\)
+- ->whereRaw\s*\(\s*.*\$.*\)
+- ->havingRaw\s*\(\s*.*\$.*\)
+- ->orderByRaw\s*\(\s*.*\$.*\)
+- ->selectRaw\s*\(\s*.*\$.*\)
+
+[MASS_ASSIGNMENT]
+description: Laravel mass assignment vulnerabilities
+patterns:
+- Model::create\s*\(\s*\$request->all\(\)\s*\)
+- Model::update\s*\(\s*\$request->all\(\)\s*\)
+- Model::fill\s*\(\s*\$request->all\(\)\s*\)
+- ->create\s*\(\s*\$request->all\(\)\s*\)
+- ->update\s*\(\s*\$request->all\(\)\s*\)
+- ->fill\s*\(\s*\$request->all\(\)\s*\)
+- Model::create\s*\(\s*\$request->input\(\)\s*\)
+- Model::update\s*\(\s*\$request->input\(\)\s*\)
+- Model::fill\s*\(\s*\$request->input\(\)\s*\)
+- ->create\s*\(\s*\$request->input\(\)\s*\)
+- ->update\s*\(\s*\$request->input\(\)\s*\)
+- ->fill\s*\(\s*\$request->input\(\)\s*\)
+
+[XSS]
+description: Laravel XSS vulnerabilities
+patterns:
+- \{!!\s*.*\$.*\s*!!\}
+- ->html\s*\(\s*.*\$.*\s*\)
+- echo\s+.*\$request->input.*
+- echo\s+.*\$request->get.*
+- echo\s+.*\$request->query.*
+
+[CSRF]
+description: Laravel CSRF vulnerabilities
+patterns:
+- Route::post\s*\(\s*.*\s*,\s*.*\s*\)\s*;\s*(?!.*csrf)
+- Route::put\s*\(\s*.*\s*,\s*.*\s*\)\s*;\s*(?!.*csrf)
+- Route::patch\s*\(\s*.*\s*,\s*.*\s*\)\s*;\s*(?!.*csrf)
+- Route::delete\s*\(\s*.*\s*,\s*.*\s*\)\s*;\s*(?!.*csrf)
+- \$middleware\s*=\s*\[(?!.*\bVerifyCsrfToken\b).*\]
+
+[AUTHENTICATION_FLAWS]
+description: Laravel authentication vulnerabilities
+patterns:
+- Auth::attempt\s*\(\s*\[\s*['"]email['"]\s*=>\s*\$request->email\s*,\s*['"]password['"]\s*=>\s*\$request->password\s*\]\s*\)
+- Auth::attempt\s*\(\s*\$request->only\s*\(\s*['"]email['"],\s*['"]password['"]\s*\)\s*\)
+- Auth::login\s*\(\s*User::find\s*\(\s*\$id\s*\)\s*\)
+
+[FILE_UPLOAD]
+description: Laravel insecure file upload vulnerabilities
+patterns:
+- \$request->file\s*\(\s*.*\s*\)->move\s*\(\s*.*\s*\)
+- \$request->file\s*\(\s*.*\s*\)->storeAs\s*\(\s*.*\s*\)
+- Storage::putFile\s*\(\s*.*\s*,\s*\$request->file\s*\(\s*.*\s*\)\s*\)
+- Storage::putFileAs\s*\(\s*.*\s*,\s*\$request->file\s*\(\s*.*\s*\)\s*,\s*.*\s*\)
+
+[AUTHORIZATION_FLAWS]
+description: Laravel authorization vulnerabilities
+patterns:
+- \$user->role\s*==\s*['"]admin['"]
+- \$user->is_admin\s*==\s*(true|1)
+- \$user->role\s*===\s*['"]admin['"]
+- \$user->is_admin\s*===\s*(true|1)
+- if\s*\(\s*\$user->role\s*==\s*['"]admin['"]\s*\)
+- if\s*\(\s*\$user->is_admin\s*==\s*(true|1)\s*\)
+- if\s*\(\s*\$user->role\s*===\s*['"]admin['"]\s*\)
+- if\s*\(\s*\$user->is_admin\s*===\s*(true|1)\s*\)

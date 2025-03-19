@@ -1,0 +1,114 @@
+[ACTIVE_RECORD_INJECTION]
+description: Rails ActiveRecord SQL injection vulnerabilities
+patterns:
+- Model\.where\s*\(\s*.*\+.*\)
+- Model\.find_by_sql\s*\(\s*.*\+.*\)
+- Model\.find_by\s*\(\s*.*\+.*\)
+- Model\.order\s*\(\s*.*\+.*\)
+- Model\.group\s*\(\s*.*\+.*\)
+- Model\.having\s*\(\s*.*\+.*\)
+- Model\.select\s*\(\s*.*\+.*\)
+- Model\.from\s*\(\s*.*\+.*\)
+- Model\.joins\s*\(\s*.*\+.*\)
+- Model\.exists\?\s*\(\s*.*\+.*\)
+- Model\.delete_all\s*\(\s*.*\+.*\)
+- Model\.destroy_all\s*\(\s*.*\+.*\)
+- Model\.update_all\s*\(\s*.*\+.*\)
+- \.where\s*\(\s*.*\+.*\)
+- \.find_by_sql\s*\(\s*.*\+.*\)
+- \.find_by\s*\(\s*.*\+.*\)
+- \.order\s*\(\s*.*\+.*\)
+- \.group\s*\(\s*.*\+.*\)
+- \.having\s*\(\s*.*\+.*\)
+- \.select\s*\(\s*.*\+.*\)
+- \.from\s*\(\s*.*\+.*\)
+- \.joins\s*\(\s*.*\+.*\)
+- \.exists\?\s*\(\s*.*\+.*\)
+- \.delete_all\s*\(\s*.*\+.*\)
+- \.destroy_all\s*\(\s*.*\+.*\)
+- \.update_all\s*\(\s*.*\+.*\)
+- ActiveRecord::Base\.connection\.execute\s*\(\s*.*\+.*\)
+- ActiveRecord::Base\.connection\.select_all\s*\(\s*.*\+.*\)
+- ActiveRecord::Base\.connection\.select_one\s*\(\s*.*\+.*\)
+- ActiveRecord::Base\.connection\.select_value\s*\(\s*.*\+.*\)
+- ActiveRecord::Base\.connection\.select_values\s*\(\s*.*\+.*\)
+
+[MASS_ASSIGNMENT]
+description: Rails mass assignment vulnerabilities
+patterns:
+- Model\.create\s*\(\s*params\[\:.*\]\s*\)
+- Model\.update\s*\(\s*params\[\:.*\]\s*\)
+- Model\.new\s*\(\s*params\[\:.*\]\s*\)
+- \.create\s*\(\s*params\[\:.*\]\s*\)
+- \.update\s*\(\s*params\[\:.*\]\s*\)
+- \.new\s*\(\s*params\[\:.*\]\s*\)
+- Model\.create\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
+- Model\.update\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
+- Model\.new\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
+- \.create\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
+- \.update\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
+- \.new\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
+
+[XSS]
+description: Rails XSS vulnerabilities
+patterns:
+- \.html_safe
+- raw\s*\(\s*.*\)
+- content_tag\s*\(\s*.*\)
+- render\s+inline\:
+- render\s*\(\s*\:inline\s*=>\s*.*\)
+- render\s*\(\s*inline\:\s*.*\)
+- <%==.*%>
+- <%= raw\s*\(\s*.*\)\s*%>
+
+[CSRF]
+description: Rails CSRF vulnerabilities
+patterns:
+- protect_from_forgery\s+except\:
+- skip_before_action\s+\:verify_authenticity_token
+- skip_before_filter\s+\:verify_authenticity_token
+
+[AUTHENTICATION_FLAWS]
+description: Rails authentication vulnerabilities
+patterns:
+- User\.find_by\s*\(\s*email\:\s*params\[\:email\]\s*\)
+- User\.find_by_email\s*\(\s*params\[\:email\]\s*\)
+- User\.find_by\s*\(\s*username\:\s*params\[\:username\]\s*\)
+- User\.find_by_username\s*\(\s*params\[\:username\]\s*\)
+- BCrypt\:\:Password\.new\s*\(\s*user\.password_digest\s*\)\s*==\s*params\[\:password\]
+- session\[\:user_id\]\s*=\s*user\.id
+
+[FILE_UPLOAD]
+description: Rails insecure file upload vulnerabilities
+patterns:
+- File\.open\s*\(\s*Rails\.root\.join\s*\(\s*['"]public/uploads/['"]\s*,\s*.*\)\s*,\s*['"]w['"]\s*\)
+- File\.open\s*\(\s*File\.join\s*\(\s*Rails\.root\s*,\s*['"]public/uploads/['"]\s*,\s*.*\)\s*,\s*['"]w['"]\s*\)
+- File\.open\s*\(\s*['"]public/uploads/.*['"]\s*,\s*['"]w['"]\s*\)
+
+[AUTHORIZATION_FLAWS]
+description: Rails authorization vulnerabilities
+patterns:
+- current_user\.admin\?
+- current_user\.is_admin\?
+- current_user\.admin\s*==\s*true
+- current_user\.is_admin\s*==\s*true
+- current_user\.role\s*==\s*['"]admin['"]
+- if\s+current_user\.admin\?
+- if\s+current_user\.is_admin\?
+- if\s+current_user\.admin\s*==\s*true
+- if\s+current_user\.is_admin\s*==\s*true
+- if\s+current_user\.role\s*==\s*['"]admin['"]
+
+[COMMAND_INJECTION]
+description: Rails command injection vulnerabilities
+patterns:
+- system\s*\(\s*.*\+.*\)
+- exec\s*\(\s*.*\+.*\)
+- spawn\s*\(\s*.*\+.*\)
+- Open3\.popen3\s*\(\s*.*\+.*\)
+- Open3\.capture3\s*\(\s*.*\+.*\)
+- Open3\.capture2\s*\(\s*.*\+.*\)
+- `.*\#{.*}`
+- %x\{.*\#{.*}\}
+- %x\(.*\#{.*}\)
+- %x\[.*\#{.*}\]
