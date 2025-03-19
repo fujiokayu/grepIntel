@@ -24,8 +24,8 @@ flowchart TD
 - **Pattern Manager**: ✅ Implemented
 - **File Scanner**: ✅ Implemented
 - **Code Extractor**: ✅ Implemented
-- **LLM Client**: 🔄 In Progress
-- **Security Analyzer**: ⏳ Pending
+- **LLM Client**: ✅ Implemented
+- **Security Analyzer**: 🔄 In Progress
 - **Report Generator**: ⏳ Pending
 
 ## Design Patterns

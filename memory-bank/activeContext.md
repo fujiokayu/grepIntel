@@ -6,6 +6,7 @@
 - Setting up the command-line interface
 - Organizing project structure for better maintainability
 - Enhancing pattern management with framework-specific patterns
+- Implementing LLM client interfaces for multiple providers
 
 ## Recent Changes
 - Project initialization
@@ -23,6 +24,9 @@
 - Implemented source code extraction functionality
 - Added context-aware code extraction for identified vulnerabilities
 - Added LLM input formatting for future analysis
+- Implemented LLM client interfaces for OpenAI, Claude, and DeepSeek
+- Added comprehensive test suite for LLM clients
+- Updated main.py to initialize LLM clients
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -31,7 +35,7 @@
 4. ✅ Implement pattern management for security grep patterns (TDD approach)
 5. ✅ Develop file scanning functionality
 6. ✅ Implement source code extraction
-7. Build LLM client interfaces
+7. ✅ Build LLM client interfaces
 8. Implement security analysis pipeline
 9. Create report generation system
 
@@ -46,3 +50,5 @@
 - Supporting both English and Japanese for reports and analysis
 - Separating LLM prompts and report templates into different directories
 - Using a hierarchical approach for pattern management (language + framework)
+- Implementing a strategy pattern for LLM clients to support multiple providers
+- Using a factory pattern for LLM client creation based on environment variables

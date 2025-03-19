@@ -15,8 +15,9 @@ from typing import List, Dict, Any, Optional
 from src.pattern_manager import PatternManager
 from src.file_scanner import FileScanner
 from src.code_extractor import CodeExtractor
+# Import LLM client
+from src.llm.client import get_llm_client
 # These modules will be implemented later
-# from src.llm.client import get_llm_client
 # from src.analyzer import SecurityAnalyzer
 # from src.report_generator import ReportGenerator
 
@@ -200,8 +201,16 @@ def main() -> int:
         # Format for LLM (for future use)
         llm_input = code_extractor.format_for_llm(extraction_results)
         
+        # Initialize LLM client
+        try:
+            llm_client = get_llm_client()
+            logger.info(f"Initialized LLM client with provider: {os.getenv('LLM_PROVIDER')}")
+        except Exception as e:
+            logger.error(f"Error initializing LLM client: {str(e)}")
+            logger.info("Continuing without LLM analysis. Only pattern matching results will be available.")
+            llm_client = None
+        
         # TODO: Implement the rest of the pipeline
-        # llm_client = get_llm_client()
         # analyzer = SecurityAnalyzer(llm_client)
         # report_generator = ReportGenerator()
         
@@ -245,7 +254,10 @@ def main() -> int:
                         print(f"    {line}")
                     print(f"    ```")
         
-        print(f"\nNote: GrepIntel is still under development. LLM-based analysis is not yet implemented.")
+        if llm_client:
+            print(f"\nNote: GrepIntel is still under development. LLM client is initialized but analysis pipeline is not yet implemented.")
+        else:
+            print(f"\nNote: GrepIntel is still under development. LLM-based analysis is not available.")
         
         return 0
     
