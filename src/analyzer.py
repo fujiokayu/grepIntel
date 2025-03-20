@@ -72,7 +72,7 @@ class SecurityAnalyzer:
 
         Args:
             extraction_results: Results from the code extractor
-            language: Language for the analysis (en or ja)
+            language: Language for the report (en or ja), but analysis is always in English
 
         Returns:
             Dict: Analysis results
@@ -133,8 +133,9 @@ class SecurityAnalyzer:
             logger.info(
                 f"Analyzing {len(extractions)} potential vulnerabilities in {file_path}"
             )
+            # Always analyze in English, store report language for later translation
             vulnerability_analyses = self.analyze_vulnerabilities_batch(
-                extractions, file_path, file_language, language
+                extractions, file_path, file_language, "en"
             )
 
             # Add analyses to file result and update statistics
@@ -179,13 +180,13 @@ class SecurityAnalyzer:
             extraction: Extraction data
             file_path: Path to the file
             language: Programming language
-            report_language: Language for the analysis (en or ja)
+            report_language: Language for the report (not used, always analyze in English)
 
         Returns:
             Dict: Vulnerability analysis
         """
-        # Format prompt
-        prompt = self.format_prompt(extraction, file_path, language, report_language)
+        # Always use English for analysis
+        prompt = self.format_prompt(extraction, file_path, language, "en")
 
         try:
             # Get LLM analysis
@@ -243,12 +244,12 @@ class SecurityAnalyzer:
             extraction: Extraction data
             file_path: Path to the file
             language: Programming language
-            report_language: Language for the analysis (en or ja)
+            report_language: Language for the report (not used, always analyze in English)
 
         Returns:
             str: Formatted prompt
         """
-        # Always use English prompt template
+        # Always use English prompt template and English for analysis
         prompt = self.prompt_template.format(
             language=language,
             file_path=file_path,
@@ -257,13 +258,6 @@ class SecurityAnalyzer:
             code_snippet=extraction["context"]["code"],
         )
 
-        # Add language instruction if not English
-        if report_language != "en":
-            language_name = {"en": "English", "ja": "Japanese"}.get(
-                report_language, report_language
-            )
-            prompt += f"\n\nPlease respond in {language_name} language."
-
         return prompt
 
     def parse_llm_response(self, response: str) -> Dict[str, Any]:
@@ -271,7 +265,7 @@ class SecurityAnalyzer:
         Parse LLM response
 
         Args:
-            response: LLM response
+            response: LLM response (in English)
 
         Returns:
             Dict: Parsed analysis
@@ -285,43 +279,43 @@ class SecurityAnalyzer:
             "recommendation": "",
         }
 
-        # Extract vulnerability assessment (support both English and Japanese headings)
+        # Extract vulnerability assessment (English only)
         assessment_match = re.search(
-            r"## (Vulnerability Assessment|脆弱性評価)\s*\n([^\n]+)", response
+            r"## Vulnerability Assessment\s*\n([^\n]+)", response
         )
         if assessment_match:
-            assessment = assessment_match.group(2).strip().lower()
-            analysis["is_vulnerable"] = "vulnerable" in assessment or "脆弱" in assessment
+            assessment = assessment_match.group(1).strip().lower()
+            analysis["is_vulnerable"] = "vulnerable" in assessment
 
-        # Extract explanation (support both English and Japanese headings)
+        # Extract explanation (English only)
         explanation_match = re.search(
-            r"## (Explanation|説明)\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
+            r"## Explanation\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
         )
         if explanation_match:
-            analysis["explanation"] = explanation_match.group(2).strip()
+            analysis["explanation"] = explanation_match.group(1).strip()
 
-        # Extract impact (if vulnerable) (support both English and Japanese headings)
+        # Extract impact (if vulnerable) (English only)
         if analysis["is_vulnerable"]:
             impact_match = re.search(
-                r"## (Impact|影響).*?\n(.*?)(?=\n##|\Z)", response, re.DOTALL
+                r"## Impact.*?\n(.*?)(?=\n##|\Z)", response, re.DOTALL
             )
             if impact_match:
-                analysis["impact"] = impact_match.group(2).strip()
+                analysis["impact"] = impact_match.group(1).strip()
 
-        # Extract secure alternative (if vulnerable) (support both English and Japanese headings)
+        # Extract secure alternative (if vulnerable) (English only)
         if analysis["is_vulnerable"]:
             alternative_match = re.search(
-                r"## (Secure Alternative|安全な代替案).*?\n```.*?\n(.*?)```", response, re.DOTALL
+                r"## Secure Alternative.*?\n```.*?\n(.*?)```", response, re.DOTALL
             )
             if alternative_match:
-                analysis["secure_alternative"] = alternative_match.group(2).strip()
+                analysis["secure_alternative"] = alternative_match.group(1).strip()
 
-        # Extract recommendation (support both English and Japanese headings)
+        # Extract recommendation (English only)
         recommendation_match = re.search(
-            r"## (Recommendation|推奨事項)\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
+            r"## Recommendation\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
         )
         if recommendation_match:
-            analysis["recommendation"] = recommendation_match.group(2).strip()
+            analysis["recommendation"] = recommendation_match.group(1).strip()
 
         return analysis
 
@@ -424,15 +418,12 @@ class SecurityAnalyzer:
             extractions: List of extraction data
             file_path: Path to the file
             language: Programming language
-            report_language: Language for the analysis (en or ja)
+            report_language: Language for the report (not used, always analyze in English)
 
         Returns:
             str: Formatted batch prompt
         """
-        # Use English for internal processing
-        prompt_language = "en"
-
-        # Get prompt template base
+        # Always use English for analysis
         template_base = "You are a security expert analyzing potential vulnerabilities in source code.\n\n"
         template_base += f"File: {file_path}\nLanguage: {language}\n\n"
         template_base += "Please analyze the following potential vulnerabilities:\n\n"
@@ -456,13 +447,6 @@ class SecurityAnalyzer:
         template_base += "## Recommendation\n[Specific recommendation]\n\n"
         template_base += "Replace X with the vulnerability number (1, 2, 3, etc.)."
 
-        # Add language instruction if not English
-        if report_language != "en":
-            language_name = {"en": "English", "ja": "Japanese"}.get(
-                report_language, report_language
-            )
-            template_base += f"\n\nPlease respond in {language_name} language."
-
         return template_base
 
     def parse_batch_response(
@@ -477,11 +461,11 @@ class SecurityAnalyzer:
         Parse a batch response from LLM
 
         Args:
-            response: LLM response
+            response: LLM response (in English)
             extractions: List of extraction data
             file_path: Path to the file
             language: Programming language
-            report_language: Language for the analysis (en or ja)
+            report_language: Language for the report (not used, always analyze in English)
 
         Returns:
             List[Dict]: List of vulnerability analyses
@@ -493,14 +477,14 @@ class SecurityAnalyzer:
 
         # Process each vulnerability in the batch
         for i, extraction in enumerate(extractions):
-            # Extract the analysis for this vulnerability (support both English and Japanese)
+            # Extract the analysis for this vulnerability (English only)
             vulnerability_number = i + 1
-            analysis_pattern = f"(ANALYSIS FOR VULNERABILITY|脆弱性分析) {vulnerability_number}:(.*?)(?=(ANALYSIS FOR VULNERABILITY|脆弱性分析)|$)"
+            analysis_pattern = f"ANALYSIS FOR VULNERABILITY {vulnerability_number}:(.*?)(?=ANALYSIS FOR VULNERABILITY|$)"
             analysis_match = re.search(analysis_pattern, response, re.DOTALL)
 
             if analysis_match:
                 # Parse the individual analysis
-                individual_response = analysis_match.group(2).strip()
+                individual_response = analysis_match.group(1).strip()
                 analysis = self.parse_llm_response(individual_response)
 
                 # Determine severity
@@ -525,7 +509,7 @@ class SecurityAnalyzer:
                     f"Failed to parse batch response for vulnerability {vulnerability_number}. Falling back to individual analysis."
                 )
                 individual_analysis = self.analyze_vulnerability(
-                    extraction, file_path, language, report_language
+                    extraction, file_path, language, "en"
                 )
                 results.append(individual_analysis)
 

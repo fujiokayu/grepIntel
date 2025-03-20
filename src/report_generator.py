@@ -8,8 +8,12 @@ based on the analysis results.
 import os
 import re
 import logging
+import copy
 from datetime import datetime
 from typing import Dict, List, Any, Optional, Tuple
+
+from src.llm.client import LLMClient
+from src.utils.translator import Translator
 
 # Set up logging
 logger = logging.getLogger("grepintel")
@@ -22,12 +26,15 @@ class ReportGenerator:
     Generates security assessment reports based on the analysis results.
     """
 
-    def __init__(self, template_dir: Optional[str] = None):
+    def __init__(
+        self, template_dir: Optional[str] = None, llm_client: Optional[LLMClient] = None
+    ):
         """
         Constructor
 
         Args:
             template_dir: Directory containing report templates
+            llm_client: LLM client instance for translation
         """
         if template_dir is None:
             template_dir = os.path.join(
@@ -35,6 +42,13 @@ class ReportGenerator:
             )
 
         self.template_dir = template_dir
+        self.llm_client = llm_client
+        self.translator = None
+
+        # Initialize translator if LLM client is provided
+        if llm_client:
+            self.translator = Translator(llm_client)
+
         logger.debug(
             f"Initialized report generator with template directory: {template_dir}"
         )
@@ -53,14 +67,19 @@ class ReportGenerator:
         Returns:
             None
         """
-        # Use language-specific template
-        template = self.load_template(language)
+        # Always use English template first
+        template = self.load_template("en")
 
         # Calculate statistics
         statistics = self.calculate_statistics(analysis_results)
 
-        # Format report
+        # Format report in English
         report = self.format_report(template, analysis_results, statistics)
+
+        # Translate the formatted report if needed and translator is available
+        if language != "en" and self.translator:
+            logger.info(f"Translating report to {language}")
+            report = self.translator.translate(report, "en", language)
 
         # Write report to file
         try:
