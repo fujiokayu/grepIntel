@@ -17,9 +17,9 @@ from src.file_scanner import FileScanner
 from src.code_extractor import CodeExtractor
 # Import LLM client
 from src.llm.client import get_llm_client
-# These modules will be implemented later
-# from src.analyzer import SecurityAnalyzer
-# from src.report_generator import ReportGenerator
+# Import analyzer and report generator
+from src.analyzer import SecurityAnalyzer
+from src.report_generator import ReportGenerator
 
 # Import configuration
 from src.config import (
@@ -210,13 +210,20 @@ def main() -> int:
             logger.info("Continuing without LLM analysis. Only pattern matching results will be available.")
             llm_client = None
         
-        # TODO: Implement the rest of the pipeline
-        # analyzer = SecurityAnalyzer(llm_client)
-        # report_generator = ReportGenerator()
+        # Initialize the rest of the pipeline
+        analyzer = None
+        report_generator = ReportGenerator()
         
-        # TODO: Complete the analysis pipeline
-        # analysis_results = analyzer.analyze(llm_input)
-        # report_generator.generate(analysis_results, args.output, args.report_language)
+        # Complete the analysis pipeline if LLM client is available
+        if llm_client:
+            analyzer = SecurityAnalyzer(llm_client)
+            logger.info("Analyzing potential security vulnerabilities...")
+            analysis_results = analyzer.analyze(extraction_results, args.report_language)
+            
+            logger.info("Generating security assessment report...")
+            report_generator.generate(analysis_results, args.output, args.report_language)
+            
+            logger.info(f"Report generated: {args.output}")
         
         # Log results
         logger.info(f"Scan completed successfully. Scanned {scan_results['files_scanned']} files.")
@@ -254,10 +261,18 @@ def main() -> int:
                         print(f"    {line}")
                     print(f"    ```")
         
-        if llm_client:
-            print(f"\nNote: GrepIntel is still under development. LLM client is initialized but analysis pipeline is not yet implemented.")
+        if llm_client and analyzer:
+            print(f"\nSecurity assessment complete. Report generated: {args.output}")
+            
+            # Print summary statistics
+            if analysis_results["total_vulnerabilities"] > 0:
+                print(f"\nVulnerability Summary:")
+                print(f"  High Severity: {analysis_results['high_severity']}")
+                print(f"  Medium Severity: {analysis_results['medium_severity']}")
+                print(f"  Low Severity: {analysis_results['low_severity']}")
+                print(f"  False Positives: {analysis_results['false_positives']}")
         else:
-            print(f"\nNote: GrepIntel is still under development. LLM-based analysis is not available.")
+            print(f"\nNote: LLM-based analysis was not performed. Only pattern matching results are available.")
         
         return 0
     
