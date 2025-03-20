@@ -16,7 +16,7 @@ SECURITY_ASPECTS = [
     "insecure_deserialization",
     "authentication_flaws",
     "authorization_flaws",
-    "sensitive_data_exposure"
+    "sensitive_data_exposure",
 ]
 
 # File extensions to language mapping
@@ -26,24 +26,24 @@ FILE_EXTENSIONS = {
     "python": ["py", "pyw", "pyc", "pyo", "pyd"],
     "javascript": ["js", "jsx", "ts", "tsx"],
     "golang": ["go"],
-    "ruby": ["rb", "erb", "rake", "gemspec", "ru"]
+    "ruby": ["rb", "erb", "rake", "gemspec", "ru"],
 }
 
 # サポートするフレームワーク
 SUPPORTED_FRAMEWORKS = [
-    "laravel",    # PHP
-    "symfony",    # PHP
-    "django",     # Python
-    "flask",      # Python
-    "fastapi",    # Python
-    "spring",     # Java
-    "rails",      # Ruby
-    "react",      # JavaScript
-    "angular",    # JavaScript
-    "vue",        # JavaScript
-    "express",    # JavaScript/Node.js
-    "gin",        # Golang
-    "echo"        # Golang
+    "laravel",  # PHP
+    "symfony",  # PHP
+    "django",  # Python
+    "flask",  # Python
+    "fastapi",  # Python
+    "spring",  # Java
+    "rails",  # Ruby
+    "react",  # JavaScript
+    "angular",  # JavaScript
+    "vue",  # JavaScript
+    "express",  # JavaScript/Node.js
+    "gin",  # Golang
+    "echo",  # Golang
 ]
 
 # フレームワークと言語のマッピング
@@ -60,7 +60,7 @@ FRAMEWORK_LANGUAGE_MAP = {
     "vue": "javascript",
     "express": "javascript",
     "gin": "golang",
-    "echo": "golang"
+    "echo": "golang",
 }
 
 # Maximum token limit for LLM context
