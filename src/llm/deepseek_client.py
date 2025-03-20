@@ -31,6 +31,7 @@ class DeepSeekClient(LLMClient):
             api_key: DeepSeek API key
             model: DeepSeek model to use
         """
+        super().__init__()  # Initialize the base class
         self.api_key = api_key
         self.model = model
         self.api_base = "https://api.deepseek.com/v1"  # DeepSeek API endpoint
@@ -92,6 +93,19 @@ class DeepSeekClient(LLMClient):
                     response_json = response.json()
                     response_text = response_json["choices"][0]["message"]["content"]
                     logger.debug("Received response from DeepSeek")
+                    
+                    # Log the interaction
+                    self.log_interaction(
+                        prompt=truncated_prompt,
+                        response=response_text,
+                        metadata={
+                            "model": self.model,
+                            "max_tokens": max_tokens,
+                            "attempt": attempt + 1,
+                            "status_code": response.status_code,
+                        }
+                    )
+                    
                     return response_text
                 elif response.status_code == 429:  # Rate limit
                     if attempt < max_retries - 1:

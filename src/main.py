@@ -82,6 +82,19 @@ def parse_arguments() -> argparse.Namespace:
         help='Enable verbose output'
     )
     
+    parser.add_argument(
+        '--log-chat',
+        action='store_true',
+        help='Log all interactions with LLM providers'
+    )
+    
+    parser.add_argument(
+        '--batch-size',
+        type=int,
+        default=3,
+        help='Number of vulnerabilities to analyze in a single batch (default: 3)'
+    )
+    
     return parser.parse_args()
 
 
@@ -205,6 +218,11 @@ def main() -> int:
         try:
             llm_client = get_llm_client()
             logger.info(f"Initialized LLM client with provider: {os.getenv('LLM_PROVIDER')}")
+            
+            # Enable chat logging if requested
+            if args.log_chat:
+                llm_client.enable_chat_logging()
+                logger.info("LLM chat logging enabled")
         except Exception as e:
             logger.error(f"Error initializing LLM client: {str(e)}")
             logger.info("Continuing without LLM analysis. Only pattern matching results will be available.")
@@ -216,8 +234,8 @@ def main() -> int:
         
         # Complete the analysis pipeline if LLM client is available
         if llm_client:
-            analyzer = SecurityAnalyzer(llm_client)
-            logger.info("Analyzing potential security vulnerabilities...")
+            analyzer = SecurityAnalyzer(llm_client, batch_size=args.batch_size)
+            logger.info(f"Analyzing potential security vulnerabilities (batch size: {args.batch_size})...")
             analysis_results = analyzer.analyze(extraction_results, args.report_language)
             
             logger.info("Generating security assessment report...")

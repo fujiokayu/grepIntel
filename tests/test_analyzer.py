@@ -228,6 +228,349 @@ Use prepared statements.
         assert "Unknown (analysis failed)" in analysis["impact"]
         assert "review this vulnerability manually" in analysis["recommendation"]
     
+    def test_format_batch_prompt(self):
+        """Test batch prompt formatting."""
+        # Create test extractions
+        extractions = [
+            {
+                "vulnerability_type": "SQL_INJECTION",
+                "description": "SQL injection vulnerabilities",
+                "line_number": 10,
+                "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                "context": {
+                    "start_line": 5,
+                    "end_line": 15,
+                    "code": "String query = \"SELECT * FROM users WHERE id = \" + userId;\nResultSet rs = stmt.executeQuery(query);"
+                }
+            },
+            {
+                "vulnerability_type": "XSS",
+                "description": "Cross-site scripting vulnerabilities",
+                "line_number": 20,
+                "pattern": "response\\.getWriter\\(\\)\\.print\\s*\\(\\s*.*request\\.getParameter.*\\)",
+                "context": {
+                    "start_line": 15,
+                    "end_line": 25,
+                    "code": "String userInput = request.getParameter(\"input\");\nresponse.getWriter().print(userInput);"
+                }
+            }
+        ]
+        
+        # Format batch prompt
+        prompt = self.analyzer.format_batch_prompt(extractions, "test.java", "java", "en")
+        
+        # Verify the prompt contains information about both vulnerabilities
+        assert "VULNERABILITY 1:" in prompt
+        assert "VULNERABILITY 2:" in prompt
+        assert "SQL_INJECTION" in prompt
+        assert "XSS" in prompt
+        assert "executeQuery" in prompt
+        assert "response.getWriter" in prompt
+        assert "ANALYSIS FOR VULNERABILITY X:" in prompt
+    
+    def test_parse_batch_response(self):
+        """Test parsing batch response."""
+        # Create test extractions
+        extractions = [
+            {
+                "vulnerability_type": "SQL_INJECTION",
+                "description": "SQL injection vulnerabilities",
+                "line_number": 10,
+                "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                "context": {
+                    "start_line": 5,
+                    "end_line": 15,
+                    "code": "String query = \"SELECT * FROM users WHERE id = \" + userId;\nResultSet rs = stmt.executeQuery(query);"
+                }
+            },
+            {
+                "vulnerability_type": "XSS",
+                "description": "Cross-site scripting vulnerabilities",
+                "line_number": 20,
+                "pattern": "response\\.getWriter\\(\\)\\.print\\s*\\(\\s*.*request\\.getParameter.*\\)",
+                "context": {
+                    "start_line": 15,
+                    "end_line": 25,
+                    "code": "String userInput = request.getParameter(\"input\");\nresponse.getWriter().print(userInput);"
+                }
+            }
+        ]
+        
+        # Sample batch response
+        batch_response = """
+ANALYSIS FOR VULNERABILITY 1:
+## Vulnerability Assessment
+Vulnerable
+
+## Explanation
+This code is vulnerable to SQL injection.
+
+## Impact
+An attacker could execute arbitrary SQL commands.
+
+## Secure Alternative
+```java
+PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+pstmt.setString(1, userId);
+ResultSet rs = pstmt.executeQuery();
+```
+
+## Recommendation
+Use prepared statements.
+
+ANALYSIS FOR VULNERABILITY 2:
+## Vulnerability Assessment
+False Positive
+
+## Explanation
+This is not actually vulnerable because the context shows proper sanitization.
+
+## Recommendation
+Continue using proper sanitization.
+"""
+        
+        # Parse the batch response
+        results = self.analyzer.parse_batch_response(batch_response, extractions, "test.java", "java", "en")
+        
+        # Verify the results
+        assert len(results) == 2
+        
+        # Verify SQL injection vulnerability
+        sql_vuln = results[0]
+        assert sql_vuln["is_vulnerable"] == True
+        assert sql_vuln["severity"] == "high"
+        assert sql_vuln["vulnerability_type"] == "SQL_INJECTION"
+        assert sql_vuln["line_number"] == 10
+        assert "SQL injection" in sql_vuln["explanation"]
+        
+        # Verify XSS vulnerability (false positive)
+        xss_vuln = results[1]
+        assert xss_vuln["is_vulnerable"] == False
+        assert xss_vuln["severity"] == "none"
+        assert xss_vuln["vulnerability_type"] == "XSS"
+        assert xss_vuln["line_number"] == 20
+        assert "not actually vulnerable" in xss_vuln["explanation"]
+    
+    def test_analyze_vulnerabilities_batch(self):
+        """Test analyzing vulnerabilities in batch."""
+        # Create test extractions
+        extractions = [
+            {
+                "vulnerability_type": "SQL_INJECTION",
+                "description": "SQL injection vulnerabilities",
+                "line_number": 10,
+                "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                "context": {
+                    "start_line": 5,
+                    "end_line": 15,
+                    "code": "String query = \"SELECT * FROM users WHERE id = \" + userId;\nResultSet rs = stmt.executeQuery(query);"
+                }
+            },
+            {
+                "vulnerability_type": "XSS",
+                "description": "Cross-site scripting vulnerabilities",
+                "line_number": 20,
+                "pattern": "response\\.getWriter\\(\\)\\.print\\s*\\(\\s*.*request\\.getParameter.*\\)",
+                "context": {
+                    "start_line": 15,
+                    "end_line": 25,
+                    "code": "String userInput = request.getParameter(\"input\");\nresponse.getWriter().print(userInput);"
+                }
+            }
+        ]
+        
+        # Mock LLM response
+        self.mock_llm_client.analyze.return_value = """
+ANALYSIS FOR VULNERABILITY 1:
+## Vulnerability Assessment
+Vulnerable
+
+## Explanation
+This code is vulnerable to SQL injection.
+
+## Impact
+An attacker could execute arbitrary SQL commands.
+
+## Secure Alternative
+```java
+PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+pstmt.setString(1, userId);
+ResultSet rs = pstmt.executeQuery();
+```
+
+## Recommendation
+Use prepared statements.
+
+ANALYSIS FOR VULNERABILITY 2:
+## Vulnerability Assessment
+False Positive
+
+## Explanation
+This is not actually vulnerable because the context shows proper sanitization.
+
+## Recommendation
+Continue using proper sanitization.
+"""
+        
+        # Analyze the vulnerabilities in batch
+        results = self.analyzer.analyze_vulnerabilities_batch(extractions, "test.java", "java", "en")
+        
+        # Verify the results
+        assert len(results) == 2
+        
+        # Verify SQL injection vulnerability
+        sql_vuln = results[0]
+        assert sql_vuln["is_vulnerable"] == True
+        assert sql_vuln["severity"] == "high"
+        assert sql_vuln["vulnerability_type"] == "SQL_INJECTION"
+        
+        # Verify XSS vulnerability (false positive)
+        xss_vuln = results[1]
+        assert xss_vuln["is_vulnerable"] == False
+        assert xss_vuln["severity"] == "none"
+        assert xss_vuln["vulnerability_type"] == "XSS"
+        
+        # Verify LLM client was called once with batch prompt
+        self.mock_llm_client.analyze.assert_called_once()
+    
+    def test_analyze_vulnerabilities_batch_single_item(self):
+        """Test analyzing a single vulnerability with batch method."""
+        # Create a single test extraction
+        extractions = [
+            {
+                "vulnerability_type": "SQL_INJECTION",
+                "description": "SQL injection vulnerabilities",
+                "line_number": 10,
+                "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                "context": {
+                    "start_line": 5,
+                    "end_line": 15,
+                    "code": "String query = \"SELECT * FROM users WHERE id = \" + userId;\nResultSet rs = stmt.executeQuery(query);"
+                }
+            }
+        ]
+        
+        # Mock LLM response for individual analysis
+        self.mock_llm_client.analyze.return_value = """
+## Vulnerability Assessment
+Vulnerable
+
+## Explanation
+This code is vulnerable to SQL injection.
+
+## Impact
+An attacker could execute arbitrary SQL commands.
+
+## Secure Alternative
+```java
+PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
+pstmt.setString(1, userId);
+ResultSet rs = pstmt.executeQuery();
+```
+
+## Recommendation
+Use prepared statements.
+"""
+        
+        # Analyze the single vulnerability with batch method
+        results = self.analyzer.analyze_vulnerabilities_batch(extractions, "test.java", "java", "en")
+        
+        # Verify the results
+        assert len(results) == 1
+        
+        # Verify SQL injection vulnerability
+        sql_vuln = results[0]
+        assert sql_vuln["is_vulnerable"] == True
+        assert sql_vuln["severity"] == "high"
+        assert sql_vuln["vulnerability_type"] == "SQL_INJECTION"
+        
+        # Verify LLM client was called once
+        self.mock_llm_client.analyze.assert_called_once()
+    
+    def test_analyze_vulnerabilities_batch_error(self):
+        """Test analyzing vulnerabilities in batch with error."""
+        # Create test extractions
+        extractions = [
+            {
+                "vulnerability_type": "SQL_INJECTION",
+                "description": "SQL injection vulnerabilities",
+                "line_number": 10,
+                "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                "context": {
+                    "start_line": 5,
+                    "end_line": 15,
+                    "code": "String query = \"SELECT * FROM users WHERE id = \" + userId;\nResultSet rs = stmt.executeQuery(query);"
+                }
+            },
+            {
+                "vulnerability_type": "XSS",
+                "description": "Cross-site scripting vulnerabilities",
+                "line_number": 20,
+                "pattern": "response\\.getWriter\\(\\)\\.print\\s*\\(\\s*.*request\\.getParameter.*\\)",
+                "context": {
+                    "start_line": 15,
+                    "end_line": 25,
+                    "code": "String userInput = request.getParameter(\"input\");\nresponse.getWriter().print(userInput);"
+                }
+            }
+        ]
+        
+        # Mock LLM client to raise an exception
+        self.mock_llm_client.analyze.side_effect = Exception("Test error")
+        
+        # Set up mock for individual analysis as fallback
+        with patch.object(self.analyzer, 'analyze_vulnerability') as mock_analyze:
+            mock_analyze.side_effect = [
+                {
+                    "is_vulnerable": True,
+                    "severity": "high",
+                    "vulnerability_type": "SQL_INJECTION",
+                    "line_number": 10,
+                    "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                    "code_context": extractions[0]["context"],
+                    "explanation": "SQL injection vulnerability",
+                    "impact": "Data breach",
+                    "secure_alternative": "Use prepared statements",
+                    "recommendation": "Fix it"
+                },
+                {
+                    "is_vulnerable": False,
+                    "severity": "none",
+                    "vulnerability_type": "XSS",
+                    "line_number": 20,
+                    "pattern": "response\\.getWriter\\(\\)\\.print\\s*\\(\\s*.*request\\.getParameter.*\\)",
+                    "code_context": extractions[1]["context"],
+                    "explanation": "Not vulnerable",
+                    "impact": "",
+                    "secure_alternative": "",
+                    "recommendation": "No action needed"
+                }
+            ]
+            
+            # Analyze the vulnerabilities in batch
+            results = self.analyzer.analyze_vulnerabilities_batch(extractions, "test.java", "java", "en")
+            
+            # Verify the results
+            assert len(results) == 2
+            
+            # Verify SQL injection vulnerability
+            sql_vuln = results[0]
+            assert sql_vuln["is_vulnerable"] == True
+            assert sql_vuln["severity"] == "high"
+            assert sql_vuln["vulnerability_type"] == "SQL_INJECTION"
+            
+            # Verify XSS vulnerability (false positive)
+            xss_vuln = results[1]
+            assert xss_vuln["is_vulnerable"] == False
+            assert xss_vuln["severity"] == "none"
+            assert xss_vuln["vulnerability_type"] == "XSS"
+            
+            # Verify LLM client was called once for batch
+            self.mock_llm_client.analyze.assert_called_once()
+            
+            # Verify individual analysis was called twice as fallback
+            assert mock_analyze.call_count == 2
+    
     def test_analyze(self):
         """Test analyzing extraction results."""
         # Create test extraction results
@@ -271,74 +614,67 @@ Use prepared statements.
             ]
         }
         
-        # Mock LLM responses
-        self.mock_llm_client.analyze.side_effect = [
-            # Response for SQL_INJECTION
-            """
-## Vulnerability Assessment
-Vulnerable
-
-## Explanation
-This code is vulnerable to SQL injection.
-
-## Impact
-An attacker could execute arbitrary SQL commands.
-
-## Secure Alternative
-```java
-PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
-pstmt.setString(1, userId);
-ResultSet rs = pstmt.executeQuery();
-```
-
-## Recommendation
-Use prepared statements.
-""",
-            # Response for XSS
-            """
-## Vulnerability Assessment
-False Positive
-
-## Explanation
-This is not actually vulnerable because the context shows proper sanitization.
-
-## Recommendation
-Continue using proper sanitization.
-"""
-        ]
-        
-        # Analyze the extraction results
-        analysis_results = self.analyzer.analyze(extraction_results)
-        
-        # Verify the analysis results
-        assert analysis_results["target_path"] == "test_project"
-        assert analysis_results["language"] == "java"
-        assert analysis_results["files_analyzed"] == 1
-        assert analysis_results["vulnerabilities_analyzed"] == 2
-        assert analysis_results["total_vulnerabilities"] == 1
-        assert analysis_results["false_positives"] == 1
-        assert analysis_results["high_severity"] == 1
-        assert analysis_results["medium_severity"] == 0
-        assert analysis_results["low_severity"] == 0
-        
-        # Verify file results
-        assert len(analysis_results["results"]) == 1
-        file_result = analysis_results["results"][0]
-        assert file_result["file_path"] == "test.java"
-        assert file_result["language"] == "java"
-        assert len(file_result["vulnerabilities"]) == 2
-        
-        # Verify SQL injection vulnerability
-        sql_vuln = file_result["vulnerabilities"][0]
-        assert sql_vuln["is_vulnerable"] == True
-        assert sql_vuln["severity"] == "high"
-        assert sql_vuln["vulnerability_type"] == "SQL_INJECTION"
-        
-        # Verify XSS vulnerability (false positive)
-        xss_vuln = file_result["vulnerabilities"][1]
-        assert xss_vuln["is_vulnerable"] == False
-        assert xss_vuln["severity"] == "none"
-        assert xss_vuln["vulnerability_type"] == "XSS"
-        
-        # Verify LLM client was called twice
-        assert self.mock_llm_client.analyze.call_count == 2
+        # Set up mock for batch analysis
+        with patch.object(self.analyzer, 'analyze_vulnerabilities_batch') as mock_batch:
+            mock_batch.return_value = [
+                {
+                    "is_vulnerable": True,
+                    "severity": "high",
+                    "vulnerability_type": "SQL_INJECTION",
+                    "line_number": 10,
+                    "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                    "code_context": extraction_results["results"][0]["extractions"][0]["context"],
+                    "explanation": "SQL injection vulnerability",
+                    "impact": "Data breach",
+                    "secure_alternative": "Use prepared statements",
+                    "recommendation": "Fix it"
+                },
+                {
+                    "is_vulnerable": False,
+                    "severity": "none",
+                    "vulnerability_type": "XSS",
+                    "line_number": 20,
+                    "pattern": "response\\.getWriter\\(\\)\\.print\\s*\\(\\s*.*request\\.getParameter.*\\)",
+                    "code_context": extraction_results["results"][0]["extractions"][1]["context"],
+                    "explanation": "Not vulnerable",
+                    "impact": "",
+                    "secure_alternative": "",
+                    "recommendation": "No action needed"
+                }
+            ]
+            
+            # Analyze the extraction results
+            analysis_results = self.analyzer.analyze(extraction_results)
+            
+            # Verify the analysis results
+            assert analysis_results["target_path"] == "test_project"
+            assert analysis_results["language"] == "java"
+            assert analysis_results["files_analyzed"] == 1
+            assert analysis_results["vulnerabilities_analyzed"] == 2
+            assert analysis_results["total_vulnerabilities"] == 1
+            assert analysis_results["false_positives"] == 1
+            assert analysis_results["high_severity"] == 1
+            assert analysis_results["medium_severity"] == 0
+            assert analysis_results["low_severity"] == 0
+            
+            # Verify file results
+            assert len(analysis_results["results"]) == 1
+            file_result = analysis_results["results"][0]
+            assert file_result["file_path"] == "test.java"
+            assert file_result["language"] == "java"
+            assert len(file_result["vulnerabilities"]) == 2
+            
+            # Verify SQL injection vulnerability
+            sql_vuln = file_result["vulnerabilities"][0]
+            assert sql_vuln["is_vulnerable"] == True
+            assert sql_vuln["severity"] == "high"
+            assert sql_vuln["vulnerability_type"] == "SQL_INJECTION"
+            
+            # Verify XSS vulnerability (false positive)
+            xss_vuln = file_result["vulnerabilities"][1]
+            assert xss_vuln["is_vulnerable"] == False
+            assert xss_vuln["severity"] == "none"
+            assert xss_vuln["vulnerability_type"] == "XSS"
+            
+            # Verify batch analysis was called once
+            mock_batch.assert_called_once()

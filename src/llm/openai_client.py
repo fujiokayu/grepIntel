@@ -32,6 +32,7 @@ class OpenAIClient(LLMClient):
             api_key: OpenAI API key
             model: OpenAI model to use
         """
+        super().__init__()  # Initialize the base class
         self.api_key = api_key
         self.model = model
         self.client = OpenAI(api_key=api_key)
@@ -80,6 +81,17 @@ class OpenAIClient(LLMClient):
                 # Extract the response text
                 response_text = response.choices[0].message.content
                 logger.debug("Received response from OpenAI")
+                
+                # Log the interaction
+                self.log_interaction(
+                    prompt=truncated_prompt,
+                    response=response_text,
+                    metadata={
+                        "model": self.model,
+                        "max_tokens": max_tokens,
+                        "attempt": attempt + 1,
+                    }
+                )
                 
                 return response_text
                 

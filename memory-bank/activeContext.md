@@ -58,3 +58,4 @@
 - Using a hierarchical approach for pattern management (language + framework)
 - Implementing a strategy pattern for LLM clients to support multiple providers
 - Using a factory pattern for LLM client creation based on environment variables
+- Implementing batch processing to analyze multiple vulnerabilities at once, reducing API calls. Using fixed-size batching with plans to explore vulnerability type-based grouping in the future. This improves execution time and optimizes token usage.
