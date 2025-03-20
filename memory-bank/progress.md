@@ -28,15 +28,16 @@
   - Modified language specification to support multiple languages instead of 'all' option
   - Updated FileScanner and ReportGenerator to handle multiple language specifications
 - Added execution time measurement and display to track tool performance
+- Enhanced README with system architecture diagram using Mermaid
+- Added expanded command examples to README for better usability
+- Added Contributing section to README to encourage pattern contributions
+- Completed project documentation
 
 ## In Progress
-- End-to-end testing
-- Comprehensive documentation
+- None at this stage
 
 ## Pending
 - None at this stage
-- End-to-end testing and validation
-- Comprehensive documentation
 
 ## Known Issues
 - None at this stage
