@@ -1,0 +1,134 @@
+[SQL_INJECTION]
+description: SQL injection vulnerabilities in Go code
+patterns:
+# Dangerous SQL queries using string concatenation
+- db\.(Query|QueryRow|QueryContext|QueryRowContext|Exec|ExecContext)\s*\(\s*["'].*["']\s*\+\s*.*\s*(\)|,)
+# Dangerous SQL queries using fmt.Sprintf
+- db\.(Query|QueryRow|QueryContext|QueryRowContext|Exec|ExecContext)\s*\(\s*fmt\.Sprintf\s*\(\s*["'].*%.*["']
+# Dangerous usage with SQLx library
+- sqlx\.(Query|QueryRow|QueryRowx|Queryx|NamedQuery|NamedExec|Select|Get|MustExec|Exec)\s*\(\s*["'].*["']\s*\+\s*.*\s*(\)|,)
+# Dangerous usage with GOSQL Driver
+- sql\.(Open|OpenDB)\s*\(\s*.*\s*\).*\.(Query|QueryRow|Exec)\s*\(\s*["'].*["']\s*\+\s*.*\s*(\)|,)
+
+[COMMAND_INJECTION]
+description: Command injection vulnerabilities in Go code
+patterns:
+# Dangerous usage of exec.Command
+- exec\.Command\s*\(\s*.*\s*\+\s*.*\s*(\)|,)
+# Dangerous usage of exec.CommandContext
+- exec\.CommandContext\s*\(\s*.*\s*,\s*.*\s*\+\s*.*\s*(\)|,)
+# Dangerous usage of os/exec package
+- (cmd|command)\.(Run|Output|CombinedOutput|Start)\s*\(\s*\).*\+
+# Dangerous usage with shell execution functions
+- (sh|bash|shell)\.Run\s*\(\s*.*\s*\+\s*.*\s*\)
+
+[XSS]
+description: Cross-site scripting vulnerabilities in Go code
+patterns:
+# Unescaped output in templates
+- template\.(HTML|JS|URL|Srcset|HTMLAttr)\s*\(\s*.*\s*\)
+# Direct HTML responses
+- (w|writer|response)\.(Write|WriteHeader)\s*\(\s*\[\]byte\s*\(\s*.*\s*\+\s*.*\s*\)\s*\)
+# Dangerous output using fmt.Fprintf
+- fmt\.Fprintf\s*\(\s*(w|writer|response)\s*,\s*["'].*<.*>.*["']\s*,\s*.*\s*\)
+# Dangerous output using io.WriteString
+- io\.WriteString\s*\(\s*(w|writer|response)\s*,\s*["'].*<.*>.*["']\s*\+\s*.*\s*\)
+
+[PATH_TRAVERSAL]
+description: Path traversal vulnerabilities in Go code
+patterns:
+# Dangerous usage in file operations
+- os\.(Open|OpenFile|Create|Mkdir|MkdirAll|Remove|RemoveAll|Rename|Symlink|Link|Chmod|Chown)\s*\(\s*.*\s*\+\s*.*\s*\)
+# Dangerous usage with ioutil package
+- ioutil\.(ReadFile|WriteFile|ReadDir|TempDir|TempFile)\s*\(\s*.*\s*\+\s*.*\s*\)
+# Dangerous usage with filepath.Join
+- filepath\.Join\s*\(\s*.*\s*,\s*(r\.(FormValue|URL\.Query\(\))|.*\s*\+\s*.*)\s*\)
+# Dangerous usage with http.ServeFile
+- http\.ServeFile\s*\(\s*.*\s*,\s*.*\s*,\s*.*\s*\+\s*.*\s*\)
+
+[INSECURE_DESERIALIZATION]
+description: Insecure deserialization vulnerabilities in Go code
+patterns:
+# Dangerous usage with json package
+- json\.(Unmarshal|NewDecoder\s*\(\s*.*\s*\)\.Decode)\s*\(\s*.*\s*,\s*&.*\s*\)
+# Dangerous usage with gob.Decode
+- gob\.(NewDecoder\s*\(\s*.*\s*\)\.Decode|Decode)\s*\(\s*.*\s*\)
+# Dangerous usage with xml.Unmarshal
+- xml\.(Unmarshal|NewDecoder\s*\(\s*.*\s*\)\.Decode)\s*\(\s*.*\s*,\s*&.*\s*\)
+# Dangerous usage with yaml.Unmarshal
+- yaml\.(Unmarshal|NewDecoder\s*\(\s*.*\s*\)\.Decode)\s*\(\s*.*\s*,\s*&.*\s*\)
+
+[REMOTE_CODE_EXECUTION]
+description: Remote code execution vulnerabilities in Go code
+patterns:
+# Dangerous usage of reflect package
+- reflect\.(Value|ValueOf)\s*\(\s*.*\s*\)\.(MethodByName|Call)\s*\(\s*.*\s*\)
+# Dangerous usage of plugin package
+- plugin\.Open\s*\(\s*.*\s*\+\s*.*\s*\)
+# Dynamic code generation and execution
+- (go|golang)\.(Build|Run)\s*\(\s*.*\s*\+\s*.*\s*\)
+
+[SSRF]
+description: Server-side request forgery vulnerabilities in Go code
+patterns:
+# Dangerous usage with http package
+- http\.(Get|Post|Head|PostForm|Do)\s*\(\s*.*\s*\+\s*.*\s*\)
+# Dangerous usage with http.NewRequest
+- http\.NewRequest\s*\(\s*.*\s*,\s*.*\s*\+\s*.*\s*,\s*.*\s*\)
+# Dangerous usage with url.Parse
+- (url|net\/url)\.Parse\s*\(\s*.*\s*\+\s*.*\s*\)
+# Access to external resources
+- (http|https|ftp)\:\/\/\s*\+\s*.*\s*
+
+[XXE]
+description: XML external entity injection vulnerabilities in Go code
+patterns:
+# Dangerous usage with xml package
+- xml\.(Unmarshal|NewDecoder)\s*\(\s*.*\s*\)
+# Dangerous DTD processing
+- \.Entity\s*\(\s*.*\s*\)
+# Configuration allowing external entities
+- \.CharsetReader\s*=\s*.*
+
+[INSECURE_RANDOM]
+description: Insecure random number generation in Go code
+patterns:
+# Dangerous usage of math/rand package
+- math\/rand\.(Intn|Float64|Int31|Int31n|Int63|Int63n|Uint32|Perm|Shuffle)
+# Fixed seed for random generation
+- rand\.Seed\s*\(\s*\d+\s*\)
+# Insecure random generation using time as seed
+- rand\.Seed\s*\(\s*time\.Now\(\)\.(UnixNano|Unix)\(\)\s*\)
+
+[INSECURE_CRYPTOGRAPHY]
+description: Insecure cryptography in Go code
+patterns:
+# Weak cryptographic algorithms
+- (md5|sha1)\.New\s*\(\s*\)
+- crypto\/(md5|sha1)\.(New|Sum)\s*\(\s*.*\s*\)
+# Insecure cryptographic modes
+- cipher\.(NewCBCDecrypter|NewCBCEncrypter)\s*\(\s*.*\s*,\s*.*\s*\)
+# Fixed IV usage
+- iv\s*:=\s*\[\]byte\s*\{.*\}
+# Fixed key usage
+- key\s*:=\s*\[\]byte\s*\{.*\}
+
+[AUTHORIZATION_FLAWS]
+description: Authorization flaws in Go code
+patterns:
+# Missing authorization checks
+- func\s+.*\s*\(\s*w\s+http\.ResponseWriter\s*,\s*r\s*\*http\.Request\s*\)\s*\{(?!.*isAdmin|.*hasPermission|.*authorize)
+# Insecure permission checks
+- if\s+.*\.Role\s*==\s*["']admin["']\s*\{
+# Insecure cookie or session validation
+- (cookie|session)\.(Value|Token)\s*==\s*["'].*["']
+
+[SENSITIVE_DATA_EXPOSURE]
+description: Sensitive data exposure vulnerabilities in Go code
+patterns:
+# Logging sensitive information
+- (log|logger)\.(Print|Printf|Println|Fatal|Fatalf|Fatalln|Panic|Panicf|Panicln)\s*\(\s*.*password.*\s*\)
+# Hardcoded sensitive information
+- (password|secret|key|token|credential)\s*:=\s*["'].*["']
+# Insecure storage of sensitive information in environment variables
+- os\.Setenv\s*\(\s*["'](PASSWORD|SECRET|KEY|TOKEN|CREDENTIAL)["']\s*,\s*.*\s*\)

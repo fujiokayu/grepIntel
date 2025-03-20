@@ -43,6 +43,8 @@
 - Modified language specification to support multiple languages instead of 'all' option
 - Updated FileScanner and ReportGenerator to handle multiple language specifications
 - Added execution time measurement and display to main.py to track tool performance
+- Added Go language security patterns with optimized regex patterns
+- Updated Ruby language security patterns with English comments
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -54,7 +56,7 @@
 7. ✅ Build LLM client interfaces
 8. ✅ Implement security analysis pipeline
 9. ✅ Create report generation system
-10. ✅ Add support for additional languages (Ruby) and frameworks (Rails)
+10. ✅ Add support for additional languages (Ruby, Go) and frameworks (Rails)
 11. Implement end-to-end testing
 12. Add comprehensive documentation
 
