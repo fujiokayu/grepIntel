@@ -12,6 +12,7 @@ from src.llm.client import get_llm_client, LLMClient
 from src.llm.openai_client import OpenAIClient
 from src.llm.claude_client import ClaudeClient
 from src.llm.deepseek_client import DeepSeekClient
+from src.llm.gemini_client import GeminiClient
 from src.llm.utils import estimate_token_count, truncate_text_to_token_limit
 
 
@@ -95,6 +96,21 @@ class TestLLMClientFactory:
         mock_deepseek_client.assert_called_once_with("test_key")
         assert client == mock_instance
 
+    @patch.dict(os.environ, {"LLM_PROVIDER": "gemini", "LLM_API_KEY": "test_key"})
+    @patch("src.llm.gemini_client.GeminiClient")
+    def test_get_gemini_client(self, mock_gemini_client):
+        """Test getting Gemini client."""
+        # Setup mock
+        mock_instance = MagicMock()
+        mock_gemini_client.return_value = mock_instance
+
+        # Get client
+        client = get_llm_client()
+
+        # Verify
+        mock_gemini_client.assert_called_once_with("test_key")
+        assert client == mock_instance
+
     @patch.dict(os.environ, {"LLM_PROVIDER": "invalid", "LLM_API_KEY": "test_key"})
     def test_get_invalid_client(self):
         """Test getting invalid client."""
@@ -132,7 +148,7 @@ class TestOpenAIClient:
         """Test initialization."""
         client = OpenAIClient("test_key")
         assert client.api_key == "test_key"
-        assert client.model == "gpt-4"  # Default model
+        assert client.model == "gpt-4-turbo"  # Default model
 
         client = OpenAIClient("test_key", model="gpt-3.5-turbo")
         assert client.model == "gpt-3.5-turbo"
@@ -170,10 +186,10 @@ class TestClaudeClient:
         """Test initialization."""
         client = ClaudeClient("test_key")
         assert client.api_key == "test_key"
-        assert client.model == "claude-3-opus-20240229"  # Default model
+        assert client.model == "claude-3-7-sonnet-20250219"  # Default model
 
-        client = ClaudeClient("test_key", model="claude-3-sonnet-20240229")
-        assert client.model == "claude-3-sonnet-20240229"
+        client = ClaudeClient("test_key", model="claude-3-5-sonnet-20240620")
+        assert client.model == "claude-3-5-sonnet-20240620"
 
     @patch("anthropic.Anthropic")
     def test_analyze(self, mock_anthropic):
@@ -235,5 +251,51 @@ class TestDeepSeekClient:
     def test_get_token_count(self):
         """Test token counting."""
         client = DeepSeekClient("test_key")
+        count = client.get_token_count("This is a test.")
+        assert count > 0
+
+
+class TestGeminiClient:
+    """Tests for Gemini client."""
+
+    def test_init(self):
+        """Test initialization."""
+        client = GeminiClient("test_key")
+        assert client.api_key == "test_key"
+        assert client.model == "gemini-2.0-flash-lite"  # Default model
+
+        client = GeminiClient("test_key", model="gemini-1.5-flash")
+        assert client.model == "gemini-1.5-flash"
+
+    @patch("google.generativeai.GenerativeModel")
+    @patch("google.generativeai.configure")
+    def test_analyze(self, mock_configure, mock_generative_model):
+        """Test analyze method."""
+        # Setup mock
+        mock_model_instance = MagicMock()
+        mock_response = MagicMock()
+        mock_response.text = "Test response"
+        mock_model_instance.generate_content.return_value = mock_response
+        mock_generative_model.return_value = mock_model_instance
+
+        # Set PYTEST_CURRENT_TEST environment variable to bypass test mode
+        os.environ["PYTEST_CURRENT_TEST"] = "test_gemini_client_analyze"
+
+        # Create client and analyze
+        client = GeminiClient("test_key")
+        response = client.analyze("Test prompt")
+
+        # Verify
+        assert response == "Test response"
+        mock_configure.assert_called_once_with(api_key="test_key")
+        mock_generative_model.assert_called_once()
+        mock_model_instance.generate_content.assert_called_once()
+
+        # Clean up
+        del os.environ["PYTEST_CURRENT_TEST"]
+
+    def test_get_token_count(self):
+        """Test token counting."""
+        client = GeminiClient("test_key")
         count = client.get_token_count("This is a test.")
         assert count > 0

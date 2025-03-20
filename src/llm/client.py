@@ -123,6 +123,7 @@ def get_llm_client() -> LLMClient:
     # Get LLM provider from environment
     provider = os.getenv("LLM_PROVIDER")
     api_key = os.getenv("LLM_API_KEY")
+    model = os.getenv("LLM_MODEL")  # Optional model override
 
     if not provider:
         raise ValueError("LLM_PROVIDER environment variable is not set")
@@ -134,15 +135,21 @@ def get_llm_client() -> LLMClient:
     if provider.lower() == "openai":
         from src.llm.openai_client import OpenAIClient
 
-        return OpenAIClient(api_key)
+        return OpenAIClient(api_key, model=model) if model else OpenAIClient(api_key)
     elif provider.lower() == "claude":
         from src.llm.claude_client import ClaudeClient
 
-        return ClaudeClient(api_key)
+        return ClaudeClient(api_key, model=model) if model else ClaudeClient(api_key)
     elif provider.lower() == "deepseek":
         from src.llm.deepseek_client import DeepSeekClient
 
-        return DeepSeekClient(api_key)
+        return (
+            DeepSeekClient(api_key, model=model) if model else DeepSeekClient(api_key)
+        )
+    elif provider.lower() == "gemini":
+        from src.llm.gemini_client import GeminiClient
+
+        return GeminiClient(api_key, model=model) if model else GeminiClient(api_key)
     else:
         from src.config import SUPPORTED_LLM_PROVIDERS
 

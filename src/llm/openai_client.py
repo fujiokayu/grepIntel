@@ -26,7 +26,7 @@ class OpenAIClient(LLMClient):
     This class provides an implementation of the LLM client interface for OpenAI.
     """
 
-    def __init__(self, api_key: str, model: str = "gpt-4"):
+    def __init__(self, api_key: str, model: str = "gpt-4-turbo"):
         """
         Constructor
 

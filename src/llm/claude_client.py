@@ -25,7 +25,7 @@ class ClaudeClient(LLMClient):
     This class provides an implementation of the LLM client interface for Anthropic Claude.
     """
 
-    def __init__(self, api_key: str, model: str = "claude-3-opus-20240229"):
+    def __init__(self, api_key: str, model: str = "claude-3-7-sonnet-20250219"):
         """
         Constructor
 
