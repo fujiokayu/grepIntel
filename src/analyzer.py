@@ -285,43 +285,43 @@ class SecurityAnalyzer:
             "recommendation": "",
         }
 
-        # Extract vulnerability assessment
+        # Extract vulnerability assessment (support both English and Japanese headings)
         assessment_match = re.search(
-            r"## Vulnerability Assessment\s*\n([^\n]+)", response
+            r"## (Vulnerability Assessment|脆弱性評価)\s*\n([^\n]+)", response
         )
         if assessment_match:
-            assessment = assessment_match.group(1).strip()
-            analysis["is_vulnerable"] = "vulnerable" in assessment.lower()
+            assessment = assessment_match.group(2).strip().lower()
+            analysis["is_vulnerable"] = "vulnerable" in assessment or "脆弱" in assessment
 
-        # Extract explanation
+        # Extract explanation (support both English and Japanese headings)
         explanation_match = re.search(
-            r"## Explanation\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
+            r"## (Explanation|説明)\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
         )
         if explanation_match:
-            analysis["explanation"] = explanation_match.group(1).strip()
+            analysis["explanation"] = explanation_match.group(2).strip()
 
-        # Extract impact (if vulnerable)
+        # Extract impact (if vulnerable) (support both English and Japanese headings)
         if analysis["is_vulnerable"]:
             impact_match = re.search(
-                r"## Impact.*?\n(.*?)(?=\n##|\Z)", response, re.DOTALL
+                r"## (Impact|影響).*?\n(.*?)(?=\n##|\Z)", response, re.DOTALL
             )
             if impact_match:
-                analysis["impact"] = impact_match.group(1).strip()
+                analysis["impact"] = impact_match.group(2).strip()
 
-        # Extract secure alternative (if vulnerable)
+        # Extract secure alternative (if vulnerable) (support both English and Japanese headings)
         if analysis["is_vulnerable"]:
             alternative_match = re.search(
-                r"## Secure Alternative.*?\n```.*?\n(.*?)```", response, re.DOTALL
+                r"## (Secure Alternative|安全な代替案).*?\n```.*?\n(.*?)```", response, re.DOTALL
             )
             if alternative_match:
-                analysis["secure_alternative"] = alternative_match.group(1).strip()
+                analysis["secure_alternative"] = alternative_match.group(2).strip()
 
-        # Extract recommendation
+        # Extract recommendation (support both English and Japanese headings)
         recommendation_match = re.search(
-            r"## Recommendation\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
+            r"## (Recommendation|推奨事項)\s*\n(.*?)(?=\n##|\Z)", response, re.DOTALL
         )
         if recommendation_match:
-            analysis["recommendation"] = recommendation_match.group(1).strip()
+            analysis["recommendation"] = recommendation_match.group(2).strip()
 
         return analysis
 
@@ -493,14 +493,14 @@ class SecurityAnalyzer:
 
         # Process each vulnerability in the batch
         for i, extraction in enumerate(extractions):
-            # Extract the analysis for this vulnerability
+            # Extract the analysis for this vulnerability (support both English and Japanese)
             vulnerability_number = i + 1
-            analysis_pattern = f"ANALYSIS FOR VULNERABILITY {vulnerability_number}:(.*?)(?=ANALYSIS FOR VULNERABILITY|$)"
+            analysis_pattern = f"(ANALYSIS FOR VULNERABILITY|脆弱性分析) {vulnerability_number}:(.*?)(?=(ANALYSIS FOR VULNERABILITY|脆弱性分析)|$)"
             analysis_match = re.search(analysis_pattern, response, re.DOTALL)
 
             if analysis_match:
                 # Parse the individual analysis
-                individual_response = analysis_match.group(1).strip()
+                individual_response = analysis_match.group(2).strip()
                 analysis = self.parse_llm_response(individual_response)
 
                 # Determine severity

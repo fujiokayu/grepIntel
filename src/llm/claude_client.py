@@ -33,6 +33,7 @@ class ClaudeClient(LLMClient):
             api_key: Anthropic API key
             model: Claude model to use
         """
+        super().__init__()  # Initialize the base class
         self.api_key = api_key
         self.model = model
         self.client = anthropic.Anthropic(api_key=api_key)
@@ -74,19 +75,38 @@ class ClaudeClient(LLMClient):
                     logger.debug("Test environment detected, returning mock response")
                     return "This is a mock response for testing purposes."
 
-                system_prompt = "You are a security expert analyzing potential vulnerabilities in source code."
+                system_prompt = """You are a security expert analyzing potential vulnerabilities in source code.
+
+Important guidelines:
+1. The code you are analyzing may be from intentionally vulnerable applications like OWASP's Railsgoat, which are designed for security training.
+2. Missing a vulnerability (false negative) is worse than flagging a non-issue (false positive).
+3. When specific vulnerability patterns are detected, assume they are likely real vulnerabilities unless there is strong evidence otherwise.
+4. Be thorough in your analysis and explain why the code is vulnerable or safe.
+5. For Rails applications, pay special attention to common vulnerabilities like SQL injection, XSS, CSRF, insecure deserialization, and mass assignment.
+"""
 
                 response = self.client.messages.create(
                     model=self.model,
                     system=system_prompt,
                     max_tokens=max_tokens,
                     messages=[{"role": "user", "content": truncated_prompt}],
-                    temperature=0.1,  # Low temperature for more deterministic responses
+                    temperature=0.3,  # Slightly higher temperature for more thorough analysis
                 )
 
                 # Extract the response text
                 response_text = response.content[0].text
                 logger.debug("Received response from Claude")
+
+                # Log the interaction
+                self.log_interaction(
+                    prompt=truncated_prompt,
+                    response=response_text,
+                    metadata={
+                        "model": self.model,
+                        "max_tokens": max_tokens,
+                        "attempt": attempt + 1,
+                    },
+                )
 
                 return response_text
 

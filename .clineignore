@@ -2,8 +2,6 @@
 .env
 
 # Ignore logs and temporary files
-logs/
-*.log
 *.tmp
 
 # Ignore compiled Python files
