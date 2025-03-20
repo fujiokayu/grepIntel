@@ -45,7 +45,7 @@ class ReportGenerator:
         Returns:
             None
         """
-        # Load template
+        # Use language-specific template
         template = self.load_template(language)
         
         # Calculate statistics

@@ -267,6 +267,7 @@ class TestReportGenerator:
         assert "Low Severity Issues:** 0" in report
         assert "False Positives:** 0" in report
     
+    
     @patch("builtins.open", new_callable=mock_open)
     @patch.object(ReportGenerator, "load_template")
     @patch.object(ReportGenerator, "format_report")
@@ -298,3 +299,39 @@ class TestReportGenerator:
         mock_format_report.assert_called_once()
         mock_file.assert_called_once_with("report.md", 'w', encoding='utf-8')
         mock_file.return_value.__enter__.return_value.write.assert_called_once_with("Formatted report")
+    
+    @patch("builtins.open", new_callable=mock_open)
+    @patch.object(ReportGenerator, "load_template")
+    @patch.object(ReportGenerator, "format_report")
+    def test_generate_with_language_template(self, mock_format_report, mock_load_template, mock_file):
+        """Test generating a report with language-specific template."""
+        # Mock template and formatted report
+        mock_load_template.return_value = "日本語テンプレート"
+        mock_format_report.return_value = "日本語でフォーマットされたレポート"
+        
+        # Create test analysis results
+        analysis_results = {
+            "target_path": "test_project",
+            "language": "java",
+            "total_vulnerabilities": 1,
+            "false_positives": 0,
+            "high_severity": 1,
+            "medium_severity": 0,
+            "low_severity": 0,
+            "files_analyzed": 1,
+            "vulnerabilities_analyzed": 1,
+            "results": []
+        }
+        
+        # Generate report in Japanese
+        self.report_generator.generate(analysis_results, "report.md", "ja")
+        
+        # Verify Japanese template was loaded
+        mock_load_template.assert_called_once_with("ja")
+        
+        # Verify report was formatted with the template
+        mock_format_report.assert_called_once()
+        
+        # Verify report was written
+        mock_file.assert_called_once_with("report.md", 'w', encoding='utf-8')
+        mock_file.return_value.__enter__.return_value.write.assert_called_once_with("日本語でフォーマットされたレポート")

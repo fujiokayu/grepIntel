@@ -85,14 +85,15 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         '--log-chat',
         action='store_true',
-        help='Log all interactions with LLM providers'
+        default=True,
+        help='Log all interactions with LLM providers (default: enabled)'
     )
     
     parser.add_argument(
         '--batch-size',
         type=int,
-        default=3,
-        help='Number of vulnerabilities to analyze in a single batch (default: 3)'
+        default=5,
+        help='Number of vulnerabilities to analyze in a single batch (default: 5)'
     )
     
     return parser.parse_args()

@@ -47,12 +47,28 @@ class TestSecurityAnalyzer:
         prompt_en = self.analyzer.format_prompt(extraction, "test.java", "java", "en")
         assert "SQL_INJECTION" in prompt_en
         assert "java" in prompt_en
+        assert "Please respond in" not in prompt_en
+    
+    def test_format_prompt_with_language_instruction(self):
+        """Test prompt formatting with language instruction."""
+        # Create a test extraction
+        extraction = {
+            "vulnerability_type": "SQL_INJECTION",
+            "description": "SQL injection vulnerabilities",
+            "line_number": 10,
+            "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+            "context": {
+                "start_line": 5,
+                "end_line": 15,
+                "code": "String query = \"SELECT * FROM users WHERE id = \" + userId;\nResultSet rs = stmt.executeQuery(query);"
+            }
+        }
         
         # Format prompt in Japanese
         prompt_ja = self.analyzer.format_prompt(extraction, "test.java", "java", "ja")
         assert "SQL_INJECTION" in prompt_ja
         assert "java" in prompt_ja
-        assert "日本語" in prompt_ja
+        assert "Please respond in Japanese language" in prompt_ja
     
     def test_parse_llm_response_vulnerable(self):
         """Test parsing LLM response for a vulnerable case."""
@@ -267,6 +283,48 @@ Use prepared statements.
         assert "executeQuery" in prompt
         assert "response.getWriter" in prompt
         assert "ANALYSIS FOR VULNERABILITY X:" in prompt
+        assert "Please respond in" not in prompt
+    
+    def test_format_batch_prompt_with_language_instruction(self):
+        """Test batch prompt formatting with language instruction."""
+        # Create test extractions
+        extractions = [
+            {
+                "vulnerability_type": "SQL_INJECTION",
+                "description": "SQL injection vulnerabilities",
+                "line_number": 10,
+                "pattern": "executeQuery\\s*\\(\\s*.*\\+.*\\)",
+                "context": {
+                    "start_line": 5,
+                    "end_line": 15,
+                    "code": "String query = \"SELECT * FROM users WHERE id = \" + userId;\nResultSet rs = stmt.executeQuery(query);"
+                }
+            },
+            {
+                "vulnerability_type": "XSS",
+                "description": "Cross-site scripting vulnerabilities",
+                "line_number": 20,
+                "pattern": "response\\.getWriter\\(\\)\\.print\\s*\\(\\s*.*request\\.getParameter.*\\)",
+                "context": {
+                    "start_line": 15,
+                    "end_line": 25,
+                    "code": "String userInput = request.getParameter(\"input\");\nresponse.getWriter().print(userInput);"
+                }
+            }
+        ]
+        
+        # Format batch prompt in Japanese
+        prompt = self.analyzer.format_batch_prompt(extractions, "test.java", "java", "ja")
+        
+        # Verify the prompt contains information about both vulnerabilities
+        assert "VULNERABILITY 1:" in prompt
+        assert "VULNERABILITY 2:" in prompt
+        assert "SQL_INJECTION" in prompt
+        assert "XSS" in prompt
+        assert "executeQuery" in prompt
+        assert "response.getWriter" in prompt
+        assert "ANALYSIS FOR VULNERABILITY X:" in prompt
+        assert "Please respond in Japanese language" in prompt
     
     def test_parse_batch_response(self):
         """Test parsing batch response."""

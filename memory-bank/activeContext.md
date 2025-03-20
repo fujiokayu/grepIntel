@@ -31,6 +31,11 @@
 - Added severity assessment for identified vulnerabilities
 - Implemented report generation system with templating
 - Updated .clinerules with testing best practices
+- Changed approach to multilingual support: LLM now responds directly in the specified language
+- Modified SecurityAnalyzer to add language instructions to prompts
+- Restored language-specific report templates for better localization
+- Changed default batch size from 3 to 5 for optimal performance
+- Enabled LLM chat logging by default for better analysis and debugging
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -59,3 +64,15 @@
 - Implementing a strategy pattern for LLM clients to support multiple providers
 - Using a factory pattern for LLM client creation based on environment variables
 - Implementing batch processing to analyze multiple vulnerabilities at once, reducing API calls. Using fixed-size batching with plans to explore vulnerability type-based grouping in the future. This improves execution time and optimizes token usage.
+
+## Verification Practices
+- When running verification tests, use the following command-line options:
+  - `--output vulnerability_report.md`: Standardize output filename (also in .gitignore)
+  - `--report-language ja`: Test with Japanese to verify translation functionality
+  - `--batch-size 5`: Recommended batch size for optimal performance
+  - `--verbose`: Enable detailed logging for better debugging
+  - `--language php`: Specify the target language explicitly
+  - `--log-chat`: Enable LLM chat logging for analysis
+- Always check the generated report for proper formatting and translation
+- Verify error handling by testing with various edge cases
+- For translation testing, check both successful translation and fallback behavior

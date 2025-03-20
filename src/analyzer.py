@@ -34,11 +34,8 @@ class SecurityAnalyzer:
         self.results = {}
         self.batch_size = batch_size
         
-        # Load prompt templates
-        self.prompt_templates = {
-            'en': self._load_prompt_template('vulnerability_analysis_en.txt'),
-            'ja': self._load_prompt_template('vulnerability_analysis_ja.txt')
-        }
+        # Load English prompt template only
+        self.prompt_template = self._load_prompt_template('vulnerability_analysis_en.txt')
     
     def _load_prompt_template(self, filename: str) -> str:
         """
@@ -215,17 +212,19 @@ class SecurityAnalyzer:
         Returns:
             str: Formatted prompt
         """
-        # Get prompt template
-        template = self.prompt_templates.get(report_language, self.prompt_templates['en'])
-        
-        # Format prompt
-        prompt = template.format(
+        # Always use English prompt template
+        prompt = self.prompt_template.format(
             language=language,
             file_path=file_path,
             vulnerability_type=extraction["vulnerability_type"],
             pattern=extraction["pattern"],
             code_snippet=extraction["context"]["code"]
         )
+        
+        # Add language instruction if not English
+        if report_language != 'en':
+            language_name = {'en': 'English', 'ja': 'Japanese'}.get(report_language, report_language)
+            prompt += f"\n\nPlease respond in {language_name} language."
         
         return prompt
     
@@ -370,6 +369,11 @@ class SecurityAnalyzer:
         template_base += "## Secure Alternative (if vulnerable)\n```[language]\n[Secure code]\n```\n\n"
         template_base += "## Recommendation\n[Specific recommendation]\n\n"
         template_base += "Replace X with the vulnerability number (1, 2, 3, etc.)."
+        
+        # Add language instruction if not English
+        if report_language != 'en':
+            language_name = {'en': 'English', 'ja': 'Japanese'}.get(report_language, report_language)
+            template_base += f"\n\nPlease respond in {language_name} language."
         
         return template_base
     
