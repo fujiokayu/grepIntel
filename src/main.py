@@ -248,7 +248,7 @@ def main() -> int:
 
         # Initialize the rest of the pipeline
         analyzer = None
-        report_generator = ReportGenerator()
+        report_generator = ReportGenerator(llm_client=llm_client)
 
         # Complete the analysis pipeline if LLM client is available
         if llm_client:
@@ -256,11 +256,11 @@ def main() -> int:
             logger.info(
                 f"Analyzing potential security vulnerabilities (batch size: {args.batch_size})..."
             )
-            analysis_results = analyzer.analyze(
-                extraction_results, args.report_language
-            )
+            # Always analyze in English, regardless of report language
+            analysis_results = analyzer.analyze(extraction_results, "en")
 
             logger.info("Generating security assessment report...")
+            # Use the specified report language for translation
             report_generator.generate(
                 analysis_results, args.output, args.report_language
             )
