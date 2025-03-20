@@ -1,0 +1,216 @@
+[SQL_INJECTION]
+description: SQL injection vulnerabilities in Node.js code
+patterns:
+# Dangerous SQL queries using string concatenation or template literals with user input
+- (connection|conn|db)\.(query|execute)\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- (connection|conn|db)\.(query|execute)\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+# Dangerous usage with Sequelize and user input
+- sequelize\.query\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- sequelize\.query\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+# Dangerous usage with mysql and user input
+- mysql\.(query|execute)\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- mysql\.(query|execute)\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+# Dangerous usage with pg (PostgreSQL) and user input
+- (pool|client)\.query\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- (pool|client)\.query\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+
+[COMMAND_INJECTION]
+description: Command injection vulnerabilities in Node.js code
+patterns:
+# Dangerous usage of child_process.exec with user input
+- child_process\.exec\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- child_process\.exec\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+# Dangerous usage of child_process.execSync with user input
+- child_process\.execSync\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- child_process\.execSync\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+# Dangerous usage of child_process.spawn with shell option and user input
+- child_process\.spawn\s*\(\s*req\.(params|query|body)\..*\s*,\s*.*\s*,\s*\{\s*.*shell\s*:\s*true\s*.*\}\s*\)
+# Dangerous usage of exec/execSync with user input
+- (exec|execSync)\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- (exec|execSync)\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+
+[XSS]
+description: Cross-site scripting vulnerabilities in Node.js code
+patterns:
+# Dangerous response methods without proper escaping
+- res\.(send|write|end)\s*\(\s*[`"']<.*>.*\$\{req\.(params|query|body)\..*\}.*<\/.*>[`"']\s*\)
+- res\.(send|write|end)\s*\(\s*[`"']<.*>["']\s*\+\s*req\.(params|query|body)\..*\s*\+\s*["']<\/.*>["']\s*\)
+# Dangerous template rendering with user input
+- res\.render\s*\(\s*["'].*["']\s*,\s*\{\s*.*\s*:\s*req\.(params|query|body)\..*\s*\}\s*\)
+# Missing Content-Security-Policy header
+- app\.use\s*\(\s*helmet\s*\(\s*\{\s*contentSecurityPolicy\s*:\s*false\s*\}\s*\)\s*\)
+# Dangerous usage of innerHTML or similar DOM manipulation with user input
+- \$\s*\(\s*["'].*["']\s*\)\.html\s*\(\s*req\.(params|query|body)\..*\s*\)
+- (element|node)\.innerHTML\s*=\s*req\.(params|query|body)\..*
+
+[PATH_TRAVERSAL]
+description: Path traversal vulnerabilities in Node.js code
+patterns:
+# Dangerous usage of fs module with user input
+- fs\.(readFile|readFileSync|writeFile|writeFileSync|appendFile|appendFileSync|createReadStream|createWriteStream|unlink|unlinkSync|rmdir|rmdirSync|mkdir|mkdirSync|rename|renameSync|stat|statSync)\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*
+- fs\.(readFile|readFileSync|writeFile|writeFileSync|appendFile|appendFileSync|createReadStream|createWriteStream|unlink|unlinkSync|rmdir|rmdirSync|mkdir|mkdirSync|rename|renameSync|stat|statSync)\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*
+# Dangerous usage of path.join/resolve with user input
+- path\.(join|resolve)\s*\(\s*.*req\.(params|query|body)\..*\s*\)
+# Dangerous usage of __dirname or __filename with user input
+- (\_\_dirname|\_\_filename)\s*\+\s*.*req\.(params|query|body)\..*\s*
+
+[INSECURE_DESERIALIZATION]
+description: Insecure deserialization vulnerabilities in Node.js code
+patterns:
+# Dangerous usage of JSON.parse with user input
+- JSON\.parse\s*\(\s*req\.(params|query|body)\..*\s*\)
+# Dangerous usage of serialize/deserialize libraries with user input
+- (node-serialize|serialize-javascript)\.deserialize\s*\(\s*req\.(params|query|body)\..*\s*\)
+# Dangerous usage of YAML.load with user input
+- yaml\.load\s*\(\s*req\.(params|query|body)\..*\s*\)
+# Dangerous usage of unserialize with user input
+- unserialize\s*\(\s*req\.(params|query|body)\..*\s*\)
+
+[REMOTE_CODE_EXECUTION]
+description: Remote code execution vulnerabilities in Node.js code
+patterns:
+# Dangerous usage of eval with user input
+- eval\s*\(\s*req\.(params|query|body)\..*\s*\)
+# Dangerous usage of new Function with user input
+- new\s+Function\s*\(\s*req\.(params|query|body)\..*\s*\)
+# Dangerous usage of setTimeout/setInterval with string argument from user input
+- setTimeout\s*\(\s*req\.(params|query|body)\..*\s*,\s*.*\s*\)
+- setInterval\s*\(\s*req\.(params|query|body)\..*\s*,\s*.*\s*\)
+# Dangerous usage of vm module with user input
+- vm\.(runInThisContext|runInNewContext|runInContext|compileFunction)\s*\(\s*req\.(params|query|body)\..*\s*\)
+# Dangerous usage of require with variable from user input
+- require\s*\(\s*.*\s*\+\s*req\.(params|query|body)\..*\s*\)
+- require\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*\)
+
+[SSRF]
+description: Server-side request forgery vulnerabilities in Node.js code
+patterns:
+# Dangerous usage of http/https modules with user input
+- https?\.(get|request)\s*\(\s*req\.(params|query|body)\..*\s*
+- https?\.(get|request)\s*\(\s*\{\s*.*url\s*:\s*req\.(params|query|body)\..*\s*\}\s*
+# Dangerous usage of axios with user input
+- axios\.(get|post|put|delete|patch|request)\s*\(\s*req\.(params|query|body)\..*\s*
+# Dangerous usage of request with user input
+- request\s*\(\s*req\.(params|query|body)\..*\s*
+# Dangerous usage of node-fetch with user input
+- fetch\s*\(\s*req\.(params|query|body)\..*\s*
+# Dangerous usage of got with user input
+- got\s*\(\s*req\.(params|query|body)\..*\s*
+
+[XXE]
+description: XML external entity injection vulnerabilities in Node.js code
+patterns:
+# Dangerous usage of libxmljs with entity expansion enabled
+- libxmljs\.parseXml\s*\(\s*.*\s*,\s*\{\s*.*noent\s*:\s*true\s*.*\}\s*\)
+# Dangerous usage of xml2js with entity expansion enabled
+- xml2js\.Parser\s*\(\s*\{\s*.*explicitEntities\s*:\s*true\s*.*\}\s*\)
+# Dangerous usage of fast-xml-parser with entity expansion enabled
+- (new\s+XMLParser|new\s+Parser)\s*\(\s*\{\s*.*allowBooleanAttributes\s*:\s*true\s*.*\}\s*\)
+# Dangerous usage of xmldom with entity expansion enabled
+- (new\s+DOMParser|new\s+xmldom\.DOMParser)\s*\(\s*\{\s*.*xmlns\s*:\s*true\s*.*\}\s*\)
+
+[INSECURE_RANDOM]
+description: Insecure random number generation in Node.js code
+patterns:
+# Usage of Math.random for security-sensitive operations
+- Math\.random\s*\(\s*\).*password
+- Math\.random\s*\(\s*\).*token
+- Math\.random\s*\(\s*\).*secret
+- Math\.random\s*\(\s*\).*key
+# Insecure seeding of random number generators
+- \.seed\s*\(\s*\d+\s*\)
+# Insecure random string generation for security-sensitive operations
+- (Math\.random\s*\(\s*\)\s*\*\s*\d+|Math\.floor\s*\(\s*Math\.random\s*\(\s*\)\s*\*\s*\d+\s*\)).*password
+- (Math\.random\s*\(\s*\)\s*\*\s*\d+|Math\.floor\s*\(\s*Math\.random\s*\(\s*\)\s*\*\s*\d+\s*\)).*token
+- (Math\.random\s*\(\s*\)\s*\*\s*\d+|Math\.floor\s*\(\s*Math\.random\s*\(\s*\)\s*\*\s*\d+\s*\)).*secret
+- (Math\.random\s*\(\s*\)\s*\*\s*\d+|Math\.floor\s*\(\s*Math\.random\s*\(\s*\)\s*\*\s*\d+\s*\)).*key
+
+[INSECURE_CRYPTOGRAPHY]
+description: Insecure cryptography in Node.js code
+patterns:
+# Usage of weak hash algorithms
+- crypto\.createHash\s*\(\s*["'](md5|sha1)["']\s*\)
+# Insecure cipher modes
+- crypto\.createCipheriv\s*\(\s*["'].*-ecb["']\s*,\s*.*\s*,\s*.*\s*\)
+# Fixed IV
+- (const|let|var)\s+iv\s*=\s*Buffer\.from\s*\(\s*["'][a-zA-Z0-9+/=]+["']\s*\)
+# Fixed key
+- (const|let|var)\s+key\s*=\s*Buffer\.from\s*\(\s*["'][a-zA-Z0-9+/=]+["']\s*\)
+# Insufficient key length
+- crypto\.randomBytes\s*\(\s*(8|12|16)\s*\)
+# Insufficient salt rounds for bcrypt
+- bcrypt\.hash\s*\(\s*.*\s*,\s*(1|2|3|4|5|6|7|8|9)\s*,\s*.*\s*\)
+
+[AUTHORIZATION_FLAWS]
+description: Authorization flaws in Node.js code
+patterns:
+# Missing JWT verification
+- jwt\.sign\s*\(\s*.*\s*\)(?!.*\.verify)
+# Insecure JWT verification
+- jwt\.verify\s*\(\s*.*\s*,\s*["'].*["']\s*,\s*.*\s*\)
+# Missing authorization checks for sensitive routes
+- app\.(get|post|put|delete|patch)\s*\(\s*["']\/(admin|api\/v\d+\/admin|dashboard|account|profile|user|settings).*["']\s*,\s*function\s*\(\s*req\s*,\s*res\s*\)(?!.*isAuthenticated|.*isAuthorized|.*requiresAuth)
+- router\.(get|post|put|delete|patch)\s*\(\s*["']\/(admin|api\/v\d+\/admin|dashboard|account|profile|user|settings).*["']\s*,\s*function\s*\(\s*req\s*,\s*res\s*\)(?!.*isAuthenticated|.*isAuthorized|.*requiresAuth)
+# Insecure role checks
+- req\.user\.role\s*===\s*["']admin["']
+
+[SENSITIVE_DATA_EXPOSURE]
+description: Sensitive data exposure vulnerabilities in Node.js code
+patterns:
+# Hardcoded credentials
+- (const|let|var)\s+(password|secret|key|token|credential|apiKey|api_key)\s*=\s*["'][a-zA-Z0-9_\-\.]{8,}["']
+# Logging sensitive information containing specific keywords
+- console\.(log|info|warn|error)\s*\(\s*.*password.*\s*\)
+- logger\.(log|info|warn|error)\s*\(\s*.*password.*\s*\)
+# Insecure cookie settings for sensitive cookies
+- res\.cookie\s*\(\s*["'](auth|session|token|jwt)["']\s*,\s*.*\s*,\s*\{\s*.*(?!secure|httpOnly).*\}\s*\)
+# Missing HSTS header
+- app\.use\s*\(\s*helmet\s*\(\s*\{\s*.*hsts\s*:\s*false\s*.*\}\s*\)\s*\)
+
+[NOSQL_INJECTION]
+description: NoSQL injection vulnerabilities in Node.js code
+patterns:
+# Dangerous MongoDB queries with $where operator and user input
+- (collection|db)\.(find|findOne|update|updateOne|updateMany|replaceOne|deleteOne|deleteMany)\s*\(\s*\{\s*.*\$where\s*:\s*req\.(params|query|body)\..*\s*\}\s*\)
+# Dangerous MongoDB queries with operator injection
+- (collection|db)\.(find|findOne|update|updateOne|updateMany|replaceOne|deleteOne|deleteMany)\s*\(\s*\{\s*.*:\s*\{\s*\$.*\s*:\s*req\.(params|query|body)\..*\s*\}\s*\}\s*\)
+# Dangerous Mongoose queries with $where operator and user input
+- (Model|model)\.(find|findOne|findById|update|updateOne|updateMany|replaceOne|deleteOne|deleteMany)\s*\(\s*\{\s*.*\$where\s*:\s*req\.(params|query|body)\..*\s*\}\s*\)
+# Dangerous Mongoose queries with operator injection
+- (Model|model)\.(find|findOne|findById|update|updateOne|updateMany|replaceOne|deleteOne|deleteMany)\s*\(\s*\{\s*.*:\s*\{\s*\$.*\s*:\s*req\.(params|query|body)\..*\s*\}\s*\}\s*\)
+
+[PROTOTYPE_POLLUTION]
+description: Prototype pollution vulnerabilities in Node.js code
+patterns:
+# Dangerous object merging with user input
+- Object\.assign\s*\(\s*.*\s*,\s*req\.(params|query|body).*\s*\)
+# Dangerous usage of lodash.merge with user input
+- _\.merge\s*\(\s*.*\s*,\s*req\.(params|query|body).*\s*\)
+# Dangerous recursive object assignment with user input
+- for\s*\(\s*.*\s+in\s+req\.(params|query|body).*\s*\)\s*\{\s*.*\[.*\]\s*=\s*.*\[.*\]\s*\}
+# Dangerous usage of jQuery extend with user input
+- \$\.extend\s*\(\s*true\s*,\s*.*\s*,\s*req\.(params|query|body).*\s*\)
+
+[REGEX_DOS]
+description: Regular expression denial of service vulnerabilities in Node.js code
+patterns:
+# Dangerous regex patterns with nested quantifiers
+- new\s+RegExp\s*\(\s*["'].*(\*|\+|\{.*\}).*(\*|\+|\{.*\}).*["']\s*\)
+- \/.*(\*|\+|\{.*\}).*(\*|\+|\{.*\}).*\/
+# Dangerous regex patterns with lookaheads/lookbehinds and quantifiers
+- new\s+RegExp\s*\(\s*["'].*((\?=|\?!).*(\*|\+|\{.*\})).*["']\s*\)
+- \/.*((\?=|\?!).*(\*|\+|\{.*\})).*\/
+# Dangerous regex test/match/exec with user input on potentially catastrophic patterns
+- \/.*((\*|\+|\{.*\}).*(\*|\+|\{.*\})|(\?=|\?!).*(\*|\+|\{.*\})).*\/\.(test|match|exec)\s*\(\s*req\.(params|query|body)\..*\s*\)
+
+[OPEN_REDIRECT]
+description: Open redirect vulnerabilities in Node.js code
+patterns:
+# Dangerous redirects with user input
+- res\.redirect\s*\(\s*req\.(params|query|body)\..*\s*\)
+- res\.redirect\s*\(\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*\)
+- res\.redirect\s*\(\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*\)
+# Dangerous location header with user input
+- res\.setHeader\s*\(\s*["']Location["']\s*,\s*req\.(params|query|body)\..*\s*\)
+- res\.setHeader\s*\(\s*["']Location["']\s*,\s*[`"'].*\$\{req\.(params|query|body)\..*\}.*[`"']\s*\)
+- res\.setHeader\s*\(\s*["']Location["']\s*,\s*["'].*["']\s*\+\s*req\.(params|query|body)\..*\s*\)

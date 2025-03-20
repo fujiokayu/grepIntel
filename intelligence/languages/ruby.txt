@@ -1,0 +1,109 @@
+[SQL_INJECTION]
+description: SQL injection vulnerabilities in Ruby code
+patterns:
+# Dangerous SQL queries using string interpolation (combining various methods)
+- (execute|query|select|select_values|select_rows|select_one|select_all|insert|update|delete|exec_query|exec_update|exec_delete)\s*\(\s*["'].*\#\{.*\}.*["']\s*\)
+# Dangerous usage with various database libraries (combining prefixes)
+- (db|conn|connection|sqlite|mysql|pg|postgres)\.(execute|query|exec)\s*\(\s*["'].*\#\{.*\}.*["']\s*\)
+# Dangerous usage with Sequel library
+- sequel_db(\[\s*["'].*\#\{.*\}.*["']\s*\]|\.(fetch|execute)\s*\(\s*["'].*\#\{.*\}.*["']\s*\))
+
+[COMMAND_INJECTION]
+description: Command injection vulnerabilities in Ruby code
+patterns:
+# Dangerous command execution using backticks (combining various syntax)
+- (`|\%x[\(\{\[\<]).*\#\{.*\}.*(`|\%x[\)\}\]\>])
+# Dangerous command execution using system functions
+- (system|exec|spawn|Process\.spawn)\s*\(\s*.*\#\{.*\}.*\s*\)
+# Dangerous command execution using Open3 module
+- Open3\.(popen3|popen2|popen2e|capture3|capture2|capture2e|pipeline|pipeline_r|pipeline_w|pipeline_rw|pipeline_start)\s*\(\s*.*\#\{.*\}.*\s*\)
+# Dangerous command execution using IO class
+- IO\.popen\s*\(\s*(\[.*\#\{.*\}.*\]|.*\#\{.*\}.*(\s*,\s*["']r["']|\s*,\s*["']w["']|\s*,\s*["']r\+["'])?)\s*\)
+
+[XSS]
+description: Cross-site scripting vulnerabilities in Ruby code
+patterns:
+# Unsafe HTML rendering
+- ["']<.*>["']\s*(\+|<<|\#\{)\s*.*
+- ["']<script.*>["']\s*(\+|<<|\#\{)\s*.*
+# Unsafe output in template engines
+- (erb|haml|slim)\s*\(\s*(["'].*\#\{.*\}.*["']|:.*,\s*:locals\s*=>\s*\{.*\})\s*\)
+# Unsafe output in ERB
+- ERB\.new\s*\(\s*.*\s*(,\s*.*\s*,\s*["']-["']|,\s*nil\s*,\s*["']-["']|,\s*nil\s*,\s*nil\s*,\s*["']-["'])\s*\)
+
+[PATH_TRAVERSAL]
+description: Path traversal vulnerabilities in Ruby code
+patterns:
+# Unsafe file access using File class
+- File\.(open|read|write|binread|binwrite|readlines|foreach|delete|unlink|rename|symlink|link|chmod|chown)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# Unsafe file access using IO class
+- IO\.(read|write|binread|binwrite|readlines|foreach)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# Unsafe file access using FileUtils module
+- FileUtils\.(cp|cp_r|mv|rm|rm_r|rm_rf|install|mkdir|mkdir_p|touch|chmod|chmod_R|chown|chown_R)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# Unsafe directory access using Dir class
+- Dir\.(glob|entries|foreach|mkdir|rmdir|delete|unlink)\s*\(\s*.*\#\{.*\}.*\s*\)
+
+[INSECURE_DESERIALIZATION]
+description: Insecure deserialization vulnerabilities in Ruby code
+patterns:
+# Unsafe deserialization
+- (Marshal\.(load|restore)|YAML\.(load|load_file|load_stream|unsafe_load|unsafe_load_file)|JSON\.load|Oj\.(load|object_load)|Psych\.(load|load_file|unsafe_load|unsafe_load_file))\s*\(\s*.*\s*\)
+# Dangerous usage of ObjectSpace
+- ObjectSpace\.\_id2ref\s*\(\s*.*\s*\)
+
+[REMOTE_CODE_EXECUTION]
+description: Remote code execution vulnerabilities in Ruby code
+patterns:
+# Unsafe code evaluation
+- (eval|instance_eval|class_eval|module_eval|binding\.eval|Kernel\.eval)\s*\(\s*.*\s*\)
+# Unsafe method invocation
+- (Kernel\.send|send|__send__|public_send)\s*\(\s*.*\s*\)
+# Unsafe method definition
+- (define_method|define_singleton_method)\s*\(\s*.*\s*\)\s*\{\s*.*\s*\}
+# Unsafe constant manipulation
+- (const_get|remove_const|const_set)\s*\(\s*.*\s*\)
+# Unsafe variable manipulation
+- (class_variable_get|class_variable_set|instance_variable_get|instance_variable_set)\s*\(\s*.*\s*\)
+
+[SSRF]
+description: Server-side request forgery vulnerabilities in Ruby code
+patterns:
+# Unsafe requests using Net::HTTP
+- Net::HTTP\.(get|get_response|post|post_form)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+- Net::HTTP\.(start|new)\s*\(\s*.*\#\{.*\}.*\s*,\s*.*\s*\)
+# Unsafe operations using URI class
+- (URI|URI\.parse|URI\.join|Addressable::URI\.parse|Addressable::URI\.join)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# Unsafe requests using common HTTP libraries
+- (HTTParty|Faraday|RestClient|Typhoeus)\.(get|post|put|delete|patch|head|options)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# Unsafe file downloads
+- (open|Kernel\.open|OpenURI\.open_uri|URI\.open|download|fetch)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+
+[XXE]
+description: XML external entity injection vulnerabilities in Ruby code
+patterns:
+# Unsafe XML processing
+- Nokogiri::XML\s*\(\s*.*\s*(\)|,\s*nil\s*,\s*.*\s*,\s*.*\s*\)|\s*\{\s*\|config\|\s*.*\s*\})
+- (REXML::Document\.new|LibXML::XML::Document\.(string|file)|JDOM::(Document\.new|SAXBuilder\.new\.build))\s*\(\s*.*\s*\)
+
+[INSECURE_RANDOM]
+description: Insecure random number generation in Ruby code
+patterns:
+# Unsafe random number generation
+- (rand|Random\.rand|Random\.new\.rand)\s*\(\s*(\)|\d+\s*\))
+- (srand|Random\.srand)\s*\(\s*.*\s*\)
+# Unsafe repeated random number generation
+- (Array\.new\s*\(\s*\d+\s*\)|\(\d+\)\.times)\s*\{\s*(rand|Random\.rand)\s*\(\s*.*\s*\)\s*\}
+
+[INSECURE_CRYPTOGRAPHY]
+description: Insecure cryptography in Ruby code
+patterns:
+# Weak encryption algorithms
+- (Digest::(MD5|SHA1)|OpenSSL::Digest::(MD5|SHA1))(\.(hexdigest|digest)\s*\(\s*.*\s*\)|\.new)
+# Unsafe encryption algorithms
+- OpenSSL::Cipher::(DES|RC4|RC2)\.new
+- OpenSSL::Cipher::Cipher\.new\s*\(\s*["'](des|rc4|rc2)["']\s*\)
+- OpenSSL::Cipher\.new\s*\(\s*["'](des|rc4|rc2)["']\s*\)
+# Unsafe encryption modes
+- OpenSSL::Cipher::(Cipher\.new|\.new)\s*\(\s*["'].*-ecb["']\s*\)
+- OpenSSL::Cipher::(AES-128-ECB|AES-192-ECB|AES-256-ECB)
+- OpenSSL::Cipher::(AES128|AES192|AES256)\.new\s*\(\s*["']ECB["']\s*\)

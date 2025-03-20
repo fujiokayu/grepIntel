@@ -25,6 +25,9 @@
 - Create integration tests for component interactions
 - Develop end-to-end tests for complete workflows
 - Use mocks for external API calls in tests
+- Prioritize test correctness over test success - when a test fails, first verify the test is correct before changing implementation
+- Remember that tests are specifications of expected behavior, not just verification tools
+- When encountering test failures, analyze whether the test or the implementation is at fault
 
 ## User Preferences
 - Prefer clear, actionable security reports
