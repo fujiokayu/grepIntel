@@ -3,7 +3,7 @@ Configuration settings for GrepIntel.
 """
 
 # Supported LLM providers
-SUPPORTED_LLM_PROVIDERS = ["openai", "claude", "deepseek"]
+SUPPORTED_LLM_PROVIDERS = ["openai", "claude", "deepseek", "gemini"]
 
 # Security aspects to check
 SECURITY_ASPECTS = [
