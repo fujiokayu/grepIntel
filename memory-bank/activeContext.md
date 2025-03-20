@@ -45,6 +45,7 @@
 - Added execution time measurement and display to main.py to track tool performance
 - Added Go language security patterns with optimized regex patterns
 - Updated Ruby language security patterns with English comments
+- Added Node.js language security patterns with optimized regex patterns focused on user input validation
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -56,7 +57,7 @@
 7. ✅ Build LLM client interfaces
 8. ✅ Implement security analysis pipeline
 9. ✅ Create report generation system
-10. ✅ Add support for additional languages (Ruby, Go) and frameworks (Rails)
+10. ✅ Add support for additional languages (Ruby, Go, Node.js) and frameworks (Rails)
 11. Implement end-to-end testing
 12. Add comprehensive documentation
 

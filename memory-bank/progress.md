@@ -21,6 +21,7 @@
 - Added Ruby language security patterns with optimized regex patterns
 - Added Ruby on Rails framework security patterns with optimized regex patterns
 - Added Go language security patterns with optimized regex patterns
+- Added Node.js language security patterns with optimized regex patterns
 - Updated Ruby language security patterns with English comments
 - Improved command-line interface with better defaults and usability:
   - Changed `--log-chat` option to `--no-log-chat` to make logging enabled by default
@@ -105,6 +106,7 @@
 - Added Ruby language security patterns with optimized regex patterns covering SQL injection, command injection, XSS, path traversal, insecure deserialization, remote code execution, SSRF, XXE, insecure random number generation, and insecure cryptography
 - Added Ruby on Rails framework security patterns with optimized regex patterns covering mass assignment, ActiveRecord injection, XSS, CSRF, remote code execution, insecure file upload, unsafe redirects, insecure deserialization, authorization flaws, session management, sensitive data exposure, and insecure headers
 - Added Go language security patterns with optimized regex patterns covering SQL injection, command injection, XSS, path traversal, insecure deserialization, remote code execution, SSRF, XXE, insecure random number generation, insecure cryptography, authorization flaws, and sensitive data exposure
+- Added Node.js language security patterns with optimized regex patterns covering SQL injection, command injection, XSS, path traversal, insecure deserialization, remote code execution, SSRF, XXE, insecure random number generation, insecure cryptography, authorization flaws, sensitive data exposure, NoSQL injection, prototype pollution, regex DoS, and open redirect vulnerabilities
 - Updated Ruby language security patterns with English comments
 - Optimized regex patterns by combining similar patterns to improve performance while maintaining detection capabilities
 - Updated `config.py` to add Ruby file extensions (.rb, .erb, .rake, .gemspec, .ru) to FILE_EXTENSIONS dictionary to enable Ruby language detection in the command-line interface
