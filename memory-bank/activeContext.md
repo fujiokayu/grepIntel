@@ -42,6 +42,7 @@
 - Changed `--log-chat` option to `--no-log-chat` to make logging enabled by default with option to disable
 - Modified language specification to support multiple languages instead of 'all' option
 - Updated FileScanner and ReportGenerator to handle multiple language specifications
+- Added execution time measurement and display to main.py to track tool performance
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -72,6 +73,7 @@
 - Using a factory pattern for LLM client creation based on environment variables
 - Implementing batch processing to analyze multiple vulnerabilities at once, reducing API calls. Using fixed-size batching with plans to explore vulnerability type-based grouping in the future. This improves execution time and optimizes token usage.
 - Optimizing regex patterns by combining similar patterns to improve performance while maintaining detection capabilities
+- Adding execution time measurement to provide performance metrics for users
 
 ## Verification Practices
 - When running verification tests, use the following command-line options:
@@ -84,3 +86,4 @@
 - Always check the generated report for proper formatting and translation
 - Verify error handling by testing with various edge cases
 - For translation testing, check both successful translation and fallback behavior
+- Check execution time output to ensure performance is within expected ranges

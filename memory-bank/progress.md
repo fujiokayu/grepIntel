@@ -24,6 +24,7 @@
   - Changed `--log-chat` option to `--no-log-chat` to make logging enabled by default
   - Modified language specification to support multiple languages instead of 'all' option
   - Updated FileScanner and ReportGenerator to handle multiple language specifications
+- Added execution time measurement and display to track tool performance
 
 ## In Progress
 - End-to-end testing
@@ -117,6 +118,7 @@
 - Improved usability with better defaults:
   - LLM chat logging enabled by default with `--no-log-chat` option to disable
   - Multiple language specification support instead of 'all' option
+- Added execution time measurement and display to provide performance metrics for users
 
 #### Project Structure
 - Organized code into modular components

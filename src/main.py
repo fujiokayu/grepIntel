@@ -8,6 +8,7 @@ import os
 import sys
 import argparse
 import logging
+import time
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -131,6 +132,9 @@ def main() -> int:
     Returns:
         int: Exit code (0 for success, non-zero for failure)
     """
+    # Record start time
+    start_time = time.time()
+    
     # Parse command line arguments
     args = parse_arguments()
     
@@ -288,10 +292,21 @@ def main() -> int:
         else:
             print(f"\nNote: LLM-based analysis was not performed. Only pattern matching results are available.")
         
+        # Calculate and print execution time
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"\n実行時間: {execution_time:.2f}秒")
+        
         return 0
     
     except Exception as e:
         logger.error(f"Error during scan: {str(e)}", exc_info=True)
+        
+        # Calculate and print execution time even in case of error
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"\n実行時間: {execution_time:.2f}秒")
+        
         return 1
 
 
