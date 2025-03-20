@@ -2,6 +2,29 @@
 
 GrepIntel is a command-line tool for white-box security vulnerability assessment. It automates the process of identifying potential security issues in source code by leveraging language-specific pattern matching and LLM-powered analysis.
 
+## System Architecture
+
+```mermaid
+graph TD
+    User([User]) --> CLI[Command Line Interface]
+    CLI --> PM[Pattern Manager]
+    PM --> FS[File Scanner]
+    FS --> CE[Code Extractor]
+    CE --> SA[Security Analyzer]
+    SA --> RG[Report Generator]
+    RG --> Report([Markdown Report])
+    
+    IP[Intelligence Patterns] --> PM
+    SA <--> LC[LLM Client]
+    LC <--> API[LLM API]
+    
+    classDef component fill:#cac,stroke:#333,stroke-width:2px,color:#000;
+    classDef external fill:#bbf,stroke:#333,stroke-width:1px,color:#000;
+    
+    class PM,FS,CE,SA,RG,LC component;
+    class User,IP,API,Report external;
+```
+
 ## Features
 
 - Language-specific security pattern matching
@@ -49,14 +72,32 @@ python -m src.main /path/to/target/directory --language php --output report.md
 Advanced usage examples:
 
 ```bash
-# Scan a Laravel project with Japanese report
-python -m src.main /path/to/laravel/project --language php --framework laravel --report-language ja --output laravel_report.md
+# Basic usage (scanning a PHP project)
+python -m src.main /path/to/php/project --language php --output php_report.md
 
-# Scan with batch processing and disable LLM interaction logging
-python -m src.main /path/to/target/file.php --language php --batch-size 5 --no-log-chat --verbose
+# Scanning multiple languages (PHP and JavaScript)
+python -m src.main /path/to/web/project --language php javascript --output web_project_report.md
 
-# Scan multiple languages
-python -m src.main /path/to/project --language php java --output security_report.md
+# Including framework-specific patterns
+python -m src.main /path/to/rails/project --language ruby --framework rails --output rails_security_report.md
+
+# Generating a Japanese report
+python -m src.main /path/to/project --language java --report-language ja --output java_report_ja.md
+
+# Enabling verbose logging
+python -m src.main /path/to/project --language python --verbose --output python_report.md
+
+# Adjusting batch size for large projects
+python -m src.main /path/to/large/project --language go --batch-size 10 --output go_report.md
+
+# Disabling LLM chat logging for privacy
+python -m src.main /path/to/sensitive/project --language nodejs --no-log-chat --output nodejs_report.md
+
+# Scanning a specific file only
+python -m src.main /path/to/specific/file.php --language php --output single_file_report.md
+
+# Combining multiple languages and frameworks
+python -m src.main /path/to/fullstack/project --language php ruby --framework laravel rails --output fullstack_report.md
 ```
 
 Options:
@@ -89,6 +130,15 @@ GrepIntel follows Test-Driven Development principles:
    pylint src tests
    black --check src tests
    ```
+
+## Contributing
+
+GrepIntel's effectiveness relies heavily on its language-specific security patterns. We welcome contributions to expand and improve these patterns.
+
+### Contributing Security Patterns
+
+1. **Language Patterns**: Add or improve patterns in `intelligence/languages/[language].txt`
+2. **Framework Patterns**: Add or improve patterns in `intelligence/frameworks/[framework].txt`
 
 ## License
 
