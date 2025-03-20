@@ -52,9 +52,10 @@ def parse_arguments() -> argparse.Namespace:
     
     parser.add_argument(
         '--language', '-l',
-        choices=list(FILE_EXTENSIONS.keys()) + ['all'],
-        default='all',
-        help='Programming language to scan for'
+        choices=list(FILE_EXTENSIONS.keys()),
+        required=True,
+        nargs='+',
+        help='Programming language(s) to scan for (multiple languages can be specified)'
     )
     
     parser.add_argument(
@@ -83,10 +84,10 @@ def parse_arguments() -> argparse.Namespace:
     )
     
     parser.add_argument(
-        '--log-chat',
-        action='store_true',
-        default=True,
-        help='Log all interactions with LLM providers (default: enabled)'
+        '--no-log-chat',
+        action='store_false',
+        dest='log_chat',
+        help='Disable logging of interactions with LLM providers (default: enabled)'
     )
     
     parser.add_argument(
@@ -164,17 +165,11 @@ def main() -> int:
         logger.info(f"Loading language patterns from {languages_dir}")
         
         if os.path.exists(languages_dir):
-            if args.language == 'all':
-                # Load patterns for all languages
-                for language in FILE_EXTENSIONS.keys():
-                    language_file = os.path.join(languages_dir, f"{language}.txt")
-                    if os.path.exists(language_file):
-                        pattern_manager.load_language_patterns(language_file, language)
-            else:
-                # Load patterns for the specified language
-                language_file = os.path.join(languages_dir, f"{args.language}.txt")
+            # Load patterns for the specified languages
+            for language in args.language:
+                language_file = os.path.join(languages_dir, f"{language}.txt")
                 if os.path.exists(language_file):
-                    pattern_manager.load_language_patterns(language_file, args.language)
+                    pattern_manager.load_language_patterns(language_file, language)
                 else:
                     logger.warning(f"Language pattern file not found: {language_file}")
         else:

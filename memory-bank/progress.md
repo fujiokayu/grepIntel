@@ -20,6 +20,10 @@
 - LLM client interfaces implementation
 - Added Ruby language security patterns with optimized regex patterns
 - Added Ruby on Rails framework security patterns with optimized regex patterns
+- Improved command-line interface with better defaults and usability:
+  - Changed `--log-chat` option to `--no-log-chat` to make logging enabled by default
+  - Modified language specification to support multiple languages instead of 'all' option
+  - Updated FileScanner and ReportGenerator to handle multiple language specifications
 
 ## In Progress
 - End-to-end testing
@@ -103,13 +107,16 @@
 #### Command-line Interface
 - Implemented argument parsing with support for:
   - Target directory/file selection
-  - Language filtering
+  - Language filtering (with support for multiple languages)
   - Framework selection
   - Output file specification
   - Report language selection
   - Verbose logging
 - Added environment variable validation
 - Implemented basic logging system
+- Improved usability with better defaults:
+  - LLM chat logging enabled by default with `--no-log-chat` option to disable
+  - Multiple language specification support instead of 'all' option
 
 #### Project Structure
 - Organized code into modular components

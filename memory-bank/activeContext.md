@@ -39,6 +39,9 @@
 - Added Ruby language security patterns with optimized regex patterns
 - Added Ruby on Rails framework security patterns with optimized regex patterns
 - Updated config.py to add Ruby file extensions (.rb, .erb, .rake, .gemspec, .ru) to FILE_EXTENSIONS dictionary
+- Changed `--log-chat` option to `--no-log-chat` to make logging enabled by default with option to disable
+- Modified language specification to support multiple languages instead of 'all' option
+- Updated FileScanner and ReportGenerator to handle multiple language specifications
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -77,7 +80,7 @@
   - `--batch-size 5`: Recommended batch size for optimal performance
   - `--verbose`: Enable detailed logging for better debugging
   - `--language php`: Specify the target language explicitly
-  - `--log-chat`: Enable LLM chat logging for analysis
+  - `--no-log-chat`: Disable LLM chat logging if needed (logging is enabled by default)
 - Always check the generated report for proper formatting and translation
 - Verify error handling by testing with various edge cases
 - For translation testing, check both successful translation and fallback behavior

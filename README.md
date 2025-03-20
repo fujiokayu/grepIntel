@@ -52,22 +52,22 @@ Advanced usage examples:
 # Scan a Laravel project with Japanese report
 python -m src.main /path/to/laravel/project --language php --framework laravel --report-language ja --output laravel_report.md
 
-# Scan with batch processing and LLM interaction logging
-python -m src.main /path/to/target/file.php --language php --batch-size 5 --log-chat --verbose
+# Scan with batch processing and disable LLM interaction logging
+python -m src.main /path/to/target/file.php --language php --batch-size 5 --no-log-chat --verbose
 
-# Scan multiple languages with default batch size
-python -m src.main /path/to/project --language all --output security_report.md
+# Scan multiple languages
+python -m src.main /path/to/project --language php java --output security_report.md
 ```
 
 Options:
 
-- `--language, -l`: Programming language to scan for (php, java, python, javascript, all)
+- `--language, -l`: Programming language(s) to scan for (php, java, python, javascript) - multiple languages can be specified
 - `--framework, -f`: Framework to include specific patterns for (laravel, rails)
 - `--output, -o`: Output report file (default: report.md)
 - `--report-language`: Language for the generated report (en, ja)
 - `--verbose, -v`: Enable verbose output
-- `--log-chat`: Log all interactions with LLM providers to the chat_logs directory
-- `--batch-size`: Number of vulnerabilities to analyze in a single batch (default: 3)
+- `--no-log-chat`: Disable logging of interactions with LLM providers (logging is enabled by default)
+- `--batch-size`: Number of vulnerabilities to analyze in a single batch (default: 5)
 
 ## Development
 

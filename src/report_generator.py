@@ -129,7 +129,15 @@ class ReportGenerator:
         # Basic information
         report = template.replace("{target}", analysis_results["target_path"])
         report = report.replace("{scan_date}", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        report = report.replace("{languages}", analysis_results["language"])
+        
+        # Handle language field which can be a string or a list
+        language_value = analysis_results["language"]
+        if isinstance(language_value, list):
+            language_str = ", ".join(language_value)
+        else:
+            language_str = str(language_value)
+        report = report.replace("{languages}", language_str)
+        
         report = report.replace("{files_scanned}", str(statistics["files_analyzed"]))
         report = report.replace("{total_vulnerabilities}", str(statistics["total_vulnerabilities"]))
         

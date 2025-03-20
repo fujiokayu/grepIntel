@@ -6,7 +6,7 @@ and identify potential vulnerabilities.
 """
 import os
 import re
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Any, Optional, Tuple, Union
 import logging
 
 # Set up logging
@@ -29,13 +29,13 @@ class FileScanner:
         self.pattern_manager = pattern_manager
         self.results = {}
     
-    def scan(self, target_path: str, language: str = 'all', framework: Optional[str] = None) -> Dict[str, Any]:
+    def scan(self, target_path: str, language: Union[str, List[str]] = 'all', framework: Optional[str] = None) -> Dict[str, Any]:
         """
         Scan the specified path
         
         Args:
             target_path: Directory or file path to scan
-            language: Target language to scan ('all' for all languages)
+            language: Target language(s) to scan ('all' for all languages, or a list of languages)
             framework: Framework to use (optional)
             
         Returns:
@@ -61,11 +61,24 @@ class FileScanner:
         if os.path.isdir(target_path):
             self._scan_directory(target_path, language, framework)
         else:
-            file_language = language
             if language == 'all':
                 file_language = self._get_language_from_file(target_path)
-            
-            if file_language:
+                if file_language:
+                    file_result = self._scan_file(target_path, file_language, framework)
+                    if file_result:
+                        self.results["files_scanned"] += 1
+                        self.results["vulnerabilities_found"] += len(file_result["matches"])
+                        self.results["results"].append(file_result)
+            elif isinstance(language, list):
+                file_ext_language = self._get_language_from_file(target_path)
+                if file_ext_language and file_ext_language in language:
+                    file_result = self._scan_file(target_path, file_ext_language, framework)
+                    if file_result:
+                        self.results["files_scanned"] += 1
+                        self.results["vulnerabilities_found"] += len(file_result["matches"])
+                        self.results["results"].append(file_result)
+            else:
+                file_language = language
                 file_result = self._scan_file(target_path, file_language, framework)
                 if file_result:
                     self.results["files_scanned"] += 1
@@ -74,7 +87,7 @@ class FileScanner:
         
         return self.results
     
-    def _scan_directory(self, directory_path: str, language: str, framework: Optional[str]) -> None:
+    def _scan_directory(self, directory_path: str, language: Union[str, List[str]], framework: Optional[str]) -> None:
         """
         Scan a directory
         
@@ -95,12 +108,24 @@ class FileScanner:
                     continue
                 
                 file_path = os.path.join(root, file)
-                file_language = language
-                
                 if language == 'all':
                     file_language = self._get_language_from_file(file_path)
-                
-                if file_language:
+                    if file_language:
+                        file_result = self._scan_file(file_path, file_language, framework)
+                        if file_result:
+                            self.results["files_scanned"] += 1
+                            self.results["vulnerabilities_found"] += len(file_result["matches"])
+                            self.results["results"].append(file_result)
+                elif isinstance(language, list):
+                    file_language = self._get_language_from_file(file_path)
+                    if file_language and file_language in language:
+                        file_result = self._scan_file(file_path, file_language, framework)
+                        if file_result:
+                            self.results["files_scanned"] += 1
+                            self.results["vulnerabilities_found"] += len(file_result["matches"])
+                            self.results["results"].append(file_result)
+                else:
+                    file_language = language
                     file_result = self._scan_file(file_path, file_language, framework)
                     if file_result:
                         self.results["files_scanned"] += 1
