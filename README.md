@@ -49,23 +49,6 @@ GrepIntel supports multiple LLM providers for security analysis:
 
 To use a specific provider, set the `LLM_PROVIDER` environment variable and provide the corresponding API key in `LLM_API_KEY`. You can also specify a custom model by setting the `LLM_MODEL` environment variable:
 
-```bash
-# Example: Using OpenAI with GPT-3.5 Turbo
-export LLM_PROVIDER=openai
-export LLM_API_KEY=your_openai_api_key
-export LLM_MODEL=gpt-3.5-turbo
-
-# Example: Using Claude with Sonnet model
-export LLM_PROVIDER=claude
-export LLM_API_KEY=your_anthropic_api_key
-export LLM_MODEL=claude-3-5-sonnet-20240620
-
-# Example: Using Gemini
-export LLM_PROVIDER=gemini
-export LLM_API_KEY=your_google_api_key
-export LLM_MODEL=gemini-1.5-flash  # Optional, defaults to gemini-2.0-flash-lite
-```
-
 ## Installation
 
 1. Clone the repository:

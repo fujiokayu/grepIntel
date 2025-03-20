@@ -7,6 +7,7 @@
 - Maintain minimum 80% test coverage at all times
 - Use Python's venv for virtual environment management
 - Apply linting and formatting with flake8, pylint, and black
+- Always run `black src tests` after writing or modifying code to ensure consistent formatting
 
 ### Security Considerations
 - Store all API keys in .env file (never commit to repository)

@@ -57,4 +57,4 @@ build/
 local_settings.py
 
 # generated report
-vulnerability_report.md
+*_report.md
