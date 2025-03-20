@@ -18,6 +18,8 @@
 - File scanning functionality implementation
 - Source code extraction functionality implementation
 - LLM client interfaces implementation
+- Added Ruby language security patterns with optimized regex patterns
+- Added Ruby on Rails framework security patterns with optimized regex patterns
 
 ## In Progress
 - End-to-end testing
@@ -93,6 +95,10 @@
 - Implemented hierarchical pattern management (language + framework)
 - Created framework-specific pattern files for Laravel and Rails
 - Reorganized intelligence directory structure to separate language and framework patterns
+- Added Ruby language security patterns with optimized regex patterns covering SQL injection, command injection, XSS, path traversal, insecure deserialization, remote code execution, SSRF, XXE, insecure random number generation, and insecure cryptography
+- Added Ruby on Rails framework security patterns with optimized regex patterns covering mass assignment, ActiveRecord injection, XSS, CSRF, remote code execution, insecure file upload, unsafe redirects, insecure deserialization, authorization flaws, session management, sensitive data exposure, and insecure headers
+- Optimized regex patterns by combining similar patterns to improve performance while maintaining detection capabilities
+- Updated `config.py` to add Ruby file extensions (.rb, .erb, .rake, .gemspec, .ru) to FILE_EXTENSIONS dictionary to enable Ruby language detection in the command-line interface
 
 #### Command-line Interface
 - Implemented argument parsing with support for:

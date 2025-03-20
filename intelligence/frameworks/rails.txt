@@ -1,114 +1,97 @@
-[ACTIVE_RECORD_INJECTION]
-description: Rails ActiveRecord SQL injection vulnerabilities
-patterns:
-- Model\.where\s*\(\s*.*\+.*\)
-- Model\.find_by_sql\s*\(\s*.*\+.*\)
-- Model\.find_by\s*\(\s*.*\+.*\)
-- Model\.order\s*\(\s*.*\+.*\)
-- Model\.group\s*\(\s*.*\+.*\)
-- Model\.having\s*\(\s*.*\+.*\)
-- Model\.select\s*\(\s*.*\+.*\)
-- Model\.from\s*\(\s*.*\+.*\)
-- Model\.joins\s*\(\s*.*\+.*\)
-- Model\.exists\?\s*\(\s*.*\+.*\)
-- Model\.delete_all\s*\(\s*.*\+.*\)
-- Model\.destroy_all\s*\(\s*.*\+.*\)
-- Model\.update_all\s*\(\s*.*\+.*\)
-- \.where\s*\(\s*.*\+.*\)
-- \.find_by_sql\s*\(\s*.*\+.*\)
-- \.find_by\s*\(\s*.*\+.*\)
-- \.order\s*\(\s*.*\+.*\)
-- \.group\s*\(\s*.*\+.*\)
-- \.having\s*\(\s*.*\+.*\)
-- \.select\s*\(\s*.*\+.*\)
-- \.from\s*\(\s*.*\+.*\)
-- \.joins\s*\(\s*.*\+.*\)
-- \.exists\?\s*\(\s*.*\+.*\)
-- \.delete_all\s*\(\s*.*\+.*\)
-- \.destroy_all\s*\(\s*.*\+.*\)
-- \.update_all\s*\(\s*.*\+.*\)
-- ActiveRecord::Base\.connection\.execute\s*\(\s*.*\+.*\)
-- ActiveRecord::Base\.connection\.select_all\s*\(\s*.*\+.*\)
-- ActiveRecord::Base\.connection\.select_one\s*\(\s*.*\+.*\)
-- ActiveRecord::Base\.connection\.select_value\s*\(\s*.*\+.*\)
-- ActiveRecord::Base\.connection\.select_values\s*\(\s*.*\+.*\)
-
 [MASS_ASSIGNMENT]
-description: Rails mass assignment vulnerabilities
+description: Mass assignment vulnerabilities in Rails applications
 patterns:
-- Model\.create\s*\(\s*params\[\:.*\]\s*\)
-- Model\.update\s*\(\s*params\[\:.*\]\s*\)
-- Model\.new\s*\(\s*params\[\:.*\]\s*\)
-- \.create\s*\(\s*params\[\:.*\]\s*\)
-- \.update\s*\(\s*params\[\:.*\]\s*\)
-- \.new\s*\(\s*params\[\:.*\]\s*\)
-- Model\.create\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
-- Model\.update\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
-- Model\.new\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
-- \.create\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
-- \.update\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
-- \.new\s*\(\s*params\.require\(\:.*\)\.permit\(\:.*\)\s*\)
+# Strong Parametersを使用していないケース
+- \.(create|update|new|attributes=|update_attributes|assign_attributes)\s*\(\s*(params|params\[\:?[a-zA-Z0-9_]+\])\s*\)
+# 安全でないattr_accessibleの使用
+- attr_accessible\s+:(admin|role|is_admin|user_type|permissions)
+
+[ACTIVERECORD_INJECTION]
+description: ActiveRecord SQL injection vulnerabilities
+patterns:
+# 文字列補間を使用した危険なクエリ
+- (where|order|group|having|joins|from|select|reorder)\s*\(\s*["'].*\#\{.*\}.*["']\s*\)
+# 生のSQLを使用した危険なクエリ
+- (find_by_sql|connection\.(execute|select_all|select_one|select_value|select_values))\s*\(\s*["'].*\#\{.*\}.*["']\s*\)
+# 安全でないプレースホルダの使用
+- where\s*\(\s*["'].*\?\s*.*["']\s*,\s*(params|request\.parameters)\[\:?[a-zA-Z0-9_]+\]\s*\)
 
 [XSS]
-description: Rails XSS vulnerabilities
+description: Cross-site scripting vulnerabilities in Rails
 patterns:
-- \.html_safe
-- raw\s*\(\s*.*\)
-- content_tag\s*\(\s*.*\)
-- render\s+inline\:
-- render\s*\(\s*\:inline\s*=>\s*.*\)
-- render\s*\(\s*inline\:\s*.*\)
-- <%==.*%>
-- <%= raw\s*\(\s*.*\)\s*%>
+# 安全でないHTMLレンダリング
+- (\.html_safe|raw\s*\(\s*.*params.*\s*\)|raw\s*\(\s*.*request\..*\s*\)|content_tag\s*\(\s*.*params.*\s*\)|content_tag\s*\(\s*.*request\..*\s*\))
+# 危険なレンダリング方法
+- render\s+(inline:|:inline\s*=>\s*|text:|:text\s*=>\s*).*params.*
+- render\s+(inline:|:inline\s*=>\s*|text:|:text\s*=>\s*).*request\..*
+# JavaScriptでの安全でない変数使用
+- (\$\(["'].*\#\{.*params.*\}.*["']\)|\$\(["'].*\#\{.*request\..*\}.*["']\)|\.html\s*\(\s*.*params.*\s*\)|\.html\s*\(\s*.*request\..*\s*\))
 
 [CSRF]
-description: Rails CSRF vulnerabilities
+description: Cross-site request forgery vulnerabilities in Rails
 patterns:
-- protect_from_forgery\s+except\:
-- skip_before_action\s+\:verify_authenticity_token
-- skip_before_filter\s+\:verify_authenticity_token
+# CSRF保護の無効化
+- skip_before_(action|filter)\s+:verify_authenticity_token
+- protect_from_forgery\s+(except:|:except\s*=>)
+- config\.action_controller\.allow_forgery_protection\s*=\s*false
+# 安全でないCSRFトークン検証
+- if\s+params\[:authenticity_token\]\s*==\s*(form_authenticity_token|session\[:_csrf_token\])
 
-[AUTHENTICATION_FLAWS]
-description: Rails authentication vulnerabilities
+[REMOTE_CODE_EXECUTION]
+description: Remote code execution vulnerabilities in Rails
 patterns:
-- User\.find_by\s*\(\s*email\:\s*params\[\:email\]\s*\)
-- User\.find_by_email\s*\(\s*params\[\:email\]\s*\)
-- User\.find_by\s*\(\s*username\:\s*params\[\:username\]\s*\)
-- User\.find_by_username\s*\(\s*params\[\:username\]\s*\)
-- BCrypt\:\:Password\.new\s*\(\s*user\.password_digest\s*\)\s*==\s*params\[\:password\]
-- session\[\:user_id\]\s*=\s*user\.id
+# 危険なコード評価
+- (eval|class_eval|instance_eval)\s*\(\s*.*(params|request\.).*\s*\)
+# 安全でないメソッド呼び出し
+- (send|public_send|const_get)\s*\(\s*(params|request\.parameters)\[\:?[a-zA-Z0-9_]+\].*\s*\)
 
-[FILE_UPLOAD]
-description: Rails insecure file upload vulnerabilities
+[INSECURE_FILE_UPLOAD]
+description: Insecure file upload vulnerabilities in Rails
 patterns:
-- File\.open\s*\(\s*Rails\.root\.join\s*\(\s*['"]public/uploads/['"]\s*,\s*.*\)\s*,\s*['"]w['"]\s*\)
-- File\.open\s*\(\s*File\.join\s*\(\s*Rails\.root\s*,\s*['"]public/uploads/['"]\s*,\s*.*\)\s*,\s*['"]w['"]\s*\)
-- File\.open\s*\(\s*['"]public/uploads/.*['"]\s*,\s*['"]w['"]\s*\)
+# ファイル拡張子の検証がない
+- params\[\:?[a-zA-Z0-9_]+\]\.(original_filename|tempfile|read|path)
+# 安全でないファイル保存
+- (File\.open\s*\(\s*.*params\[\:?[a-zA-Z0-9_]+\]\.original_filename.*\s*,\s*["']w["']\s*\)|IO\.(binwrite|write)\s*\(\s*.*params\[\:?[a-zA-Z0-9_]+\]\.original_filename.*\s*,)
+
+[UNSAFE_REDIRECT]
+description: Unsafe redirect vulnerabilities in Rails
+patterns:
+# 安全でないリダイレクト
+- redirect_to\s+((params|request\.parameters)\[\:?[a-zA-Z0-9_]+\]|request\.(referer|env\[["']HTTP_REFERER["']\]))(\s*\|\|)?
+
+[INSECURE_DESERIALIZATION]
+description: Insecure deserialization vulnerabilities in Rails
+patterns:
+# 安全でないデシリアライゼーション
+- (YAML|Marshal|JSON|Oj)\.(load|load_file|load_stream|unsafe_load|unsafe_load_file)\s*\(\s*.*(params|request\.).*\s*\)
 
 [AUTHORIZATION_FLAWS]
-description: Rails authorization vulnerabilities
+description: Authorization vulnerabilities in Rails
 patterns:
-- current_user\.admin\?
-- current_user\.is_admin\?
-- current_user\.admin\s*==\s*true
-- current_user\.is_admin\s*==\s*true
-- current_user\.role\s*==\s*['"]admin['"]
-- if\s+current_user\.admin\?
-- if\s+current_user\.is_admin\?
-- if\s+current_user\.admin\s*==\s*true
-- if\s+current_user\.is_admin\s*==\s*true
-- if\s+current_user\.role\s*==\s*['"]admin['"]
+# 安全でない認可チェック
+- current_user\.(admin\?|is_admin\?|admin\s*==\s*true|is_admin\s*==\s*true|role\s*==\s*["']admin["']|user_type\s*==\s*["']admin["'])
+# 認可チェックの欠如
+- before_(action|filter)\s+:(authenticate_user!|require_login),\s+only:
 
-[COMMAND_INJECTION]
-description: Rails command injection vulnerabilities
+[SESSION_MANAGEMENT]
+description: Session management vulnerabilities in Rails
 patterns:
-- system\s*\(\s*.*\+.*\)
-- exec\s*\(\s*.*\+.*\)
-- spawn\s*\(\s*.*\+.*\)
-- Open3\.popen3\s*\(\s*.*\+.*\)
-- Open3\.capture3\s*\(\s*.*\+.*\)
-- Open3\.capture2\s*\(\s*.*\+.*\)
-- `.*\#{.*}`
-- %x\{.*\#{.*}\}
-- %x\(.*\#{.*}\)
-- %x\[.*\#{.*}\]
+# 安全でないセッション設定
+- config\.session_store\s+:cookie_store,\s+(key:\s+["'][^"']+["'],\s+(secure:\s+false|httponly:\s+false)|key:\s+["'][^"']+["']\s*\))
+- config\.(force_ssl|action_dispatch\.session\.secure|action_dispatch\.cookies\.(secure|httponly))\s*=\s*false
+
+[SENSITIVE_DATA_EXPOSURE]
+description: Sensitive data exposure vulnerabilities in Rails
+patterns:
+# ログへの機密情報の出力
+- (Rails\.logger|logger)\.(info|debug|warn|error)\s*\(\s*.*password.*\s*\)
+- (puts|p|pp)\s+.*password.*
+# 機密情報のハードコーディング
+- ["'](password|api_key|secret|token)["']\s*(=>|:)\s*["'][^"']+["']
+
+[INSECURE_HEADERS]
+description: Insecure HTTP header vulnerabilities in Rails
+patterns:
+# 安全でないヘッダー設定
+- config\.action_dispatch\.default_headers\.(clear|delete\s*\(\s*["'](X-Frame-Options|X-XSS-Protection|X-Content-Type-Options)["']\s*\))
+- response\.headers\.delete\s*\(\s*["'](X-Frame-Options|X-XSS-Protection|X-Content-Type-Options)["']\s*\)

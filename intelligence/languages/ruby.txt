@@ -1,0 +1,109 @@
+[SQL_INJECTION]
+description: SQL injection vulnerabilities in Ruby code
+patterns:
+# 文字列補間を使用した危険なSQLクエリ（様々なメソッドをまとめる）
+- (execute|query|select|select_values|select_rows|select_one|select_all|insert|update|delete|exec_query|exec_update|exec_delete)\s*\(\s*["'].*\#\{.*\}.*["']\s*\)
+# 様々なデータベースライブラリでの危険な使用（接頭辞をまとめる）
+- (db|conn|connection|sqlite|mysql|pg|postgres)\.(execute|query|exec)\s*\(\s*["'].*\#\{.*\}.*["']\s*\)
+# Sequelライブラリでの危険な使用
+- sequel_db(\[\s*["'].*\#\{.*\}.*["']\s*\]|\.(fetch|execute)\s*\(\s*["'].*\#\{.*\}.*["']\s*\))
+
+[COMMAND_INJECTION]
+description: Command injection vulnerabilities in Ruby code
+patterns:
+# バッククォートを使用した危険なコマンド実行（様々な構文をまとめる）
+- (`|\%x[\(\{\[\<]).*\#\{.*\}.*(`|\%x[\)\}\]\>])
+# システム関数を使用した危険なコマンド実行
+- (system|exec|spawn|Process\.spawn)\s*\(\s*.*\#\{.*\}.*\s*\)
+# Open3モジュールを使用した危険なコマンド実行
+- Open3\.(popen3|popen2|popen2e|capture3|capture2|capture2e|pipeline|pipeline_r|pipeline_w|pipeline_rw|pipeline_start)\s*\(\s*.*\#\{.*\}.*\s*\)
+# IOクラスを使用した危険なコマンド実行
+- IO\.popen\s*\(\s*(\[.*\#\{.*\}.*\]|.*\#\{.*\}.*(\s*,\s*["']r["']|\s*,\s*["']w["']|\s*,\s*["']r\+["'])?)\s*\)
+
+[XSS]
+description: Cross-site scripting vulnerabilities in Ruby code
+patterns:
+# 安全でないHTMLレンダリング
+- ["']<.*>["']\s*(\+|<<|\#\{)\s*.*
+- ["']<script.*>["']\s*(\+|<<|\#\{)\s*.*
+# テンプレートエンジンでの安全でない出力
+- (erb|haml|slim)\s*\(\s*(["'].*\#\{.*\}.*["']|:.*,\s*:locals\s*=>\s*\{.*\})\s*\)
+# ERBでの安全でない出力
+- ERB\.new\s*\(\s*.*\s*(,\s*.*\s*,\s*["']-["']|,\s*nil\s*,\s*["']-["']|,\s*nil\s*,\s*nil\s*,\s*["']-["'])\s*\)
+
+[PATH_TRAVERSAL]
+description: Path traversal vulnerabilities in Ruby code
+patterns:
+# Fileクラスを使用した安全でないファイルアクセス
+- File\.(open|read|write|binread|binwrite|readlines|foreach|delete|unlink|rename|symlink|link|chmod|chown)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# IOクラスを使用した安全でないファイルアクセス
+- IO\.(read|write|binread|binwrite|readlines|foreach)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# FileUtilsモジュールを使用した安全でないファイルアクセス
+- FileUtils\.(cp|cp_r|mv|rm|rm_r|rm_rf|install|mkdir|mkdir_p|touch|chmod|chmod_R|chown|chown_R)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# Dirクラスを使用した安全でないディレクトリアクセス
+- Dir\.(glob|entries|foreach|mkdir|rmdir|delete|unlink)\s*\(\s*.*\#\{.*\}.*\s*\)
+
+[INSECURE_DESERIALIZATION]
+description: Insecure deserialization vulnerabilities in Ruby code
+patterns:
+# 安全でないデシリアライゼーション
+- (Marshal\.(load|restore)|YAML\.(load|load_file|load_stream|unsafe_load|unsafe_load_file)|JSON\.load|Oj\.(load|object_load)|Psych\.(load|load_file|unsafe_load|unsafe_load_file))\s*\(\s*.*\s*\)
+# ObjectSpaceの危険な使用
+- ObjectSpace\.\_id2ref\s*\(\s*.*\s*\)
+
+[REMOTE_CODE_EXECUTION]
+description: Remote code execution vulnerabilities in Ruby code
+patterns:
+# 安全でないコード評価
+- (eval|instance_eval|class_eval|module_eval|binding\.eval|Kernel\.eval)\s*\(\s*.*\s*\)
+# 安全でないメソッド呼び出し
+- (Kernel\.send|send|__send__|public_send)\s*\(\s*.*\s*\)
+# 安全でないメソッド定義
+- (define_method|define_singleton_method)\s*\(\s*.*\s*\)\s*\{\s*.*\s*\}
+# 安全でない定数操作
+- (const_get|remove_const|const_set)\s*\(\s*.*\s*\)
+# 安全でない変数操作
+- (class_variable_get|class_variable_set|instance_variable_get|instance_variable_set)\s*\(\s*.*\s*\)
+
+[SSRF]
+description: Server-side request forgery vulnerabilities in Ruby code
+patterns:
+# Net::HTTPを使用した安全でないリクエスト
+- Net::HTTP\.(get|get_response|post|post_form)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+- Net::HTTP\.(start|new)\s*\(\s*.*\#\{.*\}.*\s*,\s*.*\s*\)
+# URIクラスを使用した安全でない操作
+- (URI|URI\.parse|URI\.join|Addressable::URI\.parse|Addressable::URI\.join)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# 一般的なHTTPライブラリを使用した安全でないリクエスト
+- (HTTParty|Faraday|RestClient|Typhoeus)\.(get|post|put|delete|patch|head|options)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+# 安全でないファイルダウンロード
+- (open|Kernel\.open|OpenURI\.open_uri|URI\.open|download|fetch)\s*\(\s*.*\#\{.*\}.*(\s*,\s*.*\s*)?\)
+
+[XXE]
+description: XML external entity injection vulnerabilities in Ruby code
+patterns:
+# 安全でないXML処理
+- Nokogiri::XML\s*\(\s*.*\s*(\)|,\s*nil\s*,\s*.*\s*,\s*.*\s*\)|\s*\{\s*\|config\|\s*.*\s*\})
+- (REXML::Document\.new|LibXML::XML::Document\.(string|file)|JDOM::(Document\.new|SAXBuilder\.new\.build))\s*\(\s*.*\s*\)
+
+[INSECURE_RANDOM]
+description: Insecure random number generation in Ruby code
+patterns:
+# 安全でない乱数生成
+- (rand|Random\.rand|Random\.new\.rand)\s*\(\s*(\)|\d+\s*\))
+- (srand|Random\.srand)\s*\(\s*.*\s*\)
+# 安全でない乱数の繰り返し生成
+- (Array\.new\s*\(\s*\d+\s*\)|\(\d+\)\.times)\s*\{\s*(rand|Random\.rand)\s*\(\s*.*\s*\)\s*\}
+
+[INSECURE_CRYPTOGRAPHY]
+description: Insecure cryptography in Ruby code
+patterns:
+# 弱い暗号化アルゴリズム
+- (Digest::(MD5|SHA1)|OpenSSL::Digest::(MD5|SHA1))(\.(hexdigest|digest)\s*\(\s*.*\s*\)|\.new)
+# 安全でない暗号化アルゴリズム
+- OpenSSL::Cipher::(DES|RC4|RC2)\.new
+- OpenSSL::Cipher::Cipher\.new\s*\(\s*["'](des|rc4|rc2)["']\s*\)
+- OpenSSL::Cipher\.new\s*\(\s*["'](des|rc4|rc2)["']\s*\)
+# 安全でない暗号化モード
+- OpenSSL::Cipher::(Cipher\.new|\.new)\s*\(\s*["'].*-ecb["']\s*\)
+- OpenSSL::Cipher::(AES-128-ECB|AES-192-ECB|AES-256-ECB)
+- OpenSSL::Cipher::(AES128|AES192|AES256)\.new\s*\(\s*["']ECB["']\s*\)

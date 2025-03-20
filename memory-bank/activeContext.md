@@ -36,6 +36,9 @@
 - Restored language-specific report templates for better localization
 - Changed default batch size from 3 to 5 for optimal performance
 - Enabled LLM chat logging by default for better analysis and debugging
+- Added Ruby language security patterns with optimized regex patterns
+- Added Ruby on Rails framework security patterns with optimized regex patterns
+- Updated config.py to add Ruby file extensions (.rb, .erb, .rake, .gemspec, .ru) to FILE_EXTENSIONS dictionary
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -47,8 +50,9 @@
 7. ✅ Build LLM client interfaces
 8. ✅ Implement security analysis pipeline
 9. ✅ Create report generation system
-10. Implement end-to-end testing
-11. Add comprehensive documentation
+10. ✅ Add support for additional languages (Ruby) and frameworks (Rails)
+11. Implement end-to-end testing
+12. Add comprehensive documentation
 
 ## Active Decisions
 - Using Python for implementation due to its rich ecosystem and simplicity
@@ -64,6 +68,7 @@
 - Implementing a strategy pattern for LLM clients to support multiple providers
 - Using a factory pattern for LLM client creation based on environment variables
 - Implementing batch processing to analyze multiple vulnerabilities at once, reducing API calls. Using fixed-size batching with plans to explore vulnerability type-based grouping in the future. This improves execution time and optimizes token usage.
+- Optimizing regex patterns by combining similar patterns to improve performance while maintaining detection capabilities
 
 ## Verification Practices
 - When running verification tests, use the following command-line options:

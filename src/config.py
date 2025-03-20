@@ -25,7 +25,8 @@ FILE_EXTENSIONS = {
     "java": ["java", "jsp", "jspx"],
     "python": ["py", "pyw", "pyc", "pyo", "pyd"],
     "javascript": ["js", "jsx", "ts", "tsx"],
-    "golang": ["go"]
+    "golang": ["go"],
+    "ruby": ["rb", "erb", "rake", "gemspec", "ru"]
 }
 
 # サポートするフレームワーク
