@@ -64,6 +64,42 @@
 10. ✅ Add support for additional languages (Ruby, Go, Node.js) and frameworks (Rails)
 11. ✅ Project documentation completed
 12. ✅ Project completed
+13. 🔄 Improve multilingual support with post-analysis translation approach
+
+## Improved Multilingual Support Plan
+- **Current Issue**: The current approach of instructing LLMs to respond in different languages creates parsing challenges, as each language requires specific regex patterns for extracting vulnerability information.
+- **Proposed Solution**: Use English for all LLM interactions, then translate the final report using LLM.
+
+### Implementation Plan:
+1. **English-Based Analysis Process**:
+   - Standardize all LLM interactions to use English only
+   - Remove language specifications from `format_prompt` and `format_batch_prompt` methods
+   - Ensure vulnerability analysis responses are always received in English
+
+2. **Report Translation System Implementation**:
+   - Add translation functionality to `report_generator.py`
+   - Implement chunking mechanism to split reports into manageable sizes
+   - Send each chunk to LLM for translation
+   - Reassemble translated chunks into final report
+
+3. **Translation Prompt Optimization**:
+   - Create dedicated prompts for accurate translation of security terminology
+   - Include language-specific translation instructions
+   - Provide glossary of terms to maintain consistency
+
+4. **Implementation Steps**:
+   - Modify `src/analyzer.py`: Change to always communicate with LLM in English
+   - Extend `src/report_generator.py`: Add translation capabilities
+   - Create translation utility class in `src/utils/`
+   - Add translation prompt templates to `prompts/` directory
+   - Test: Verify translation quality in each supported language
+
+5. **Performance Optimization**:
+   - Optimize translation chunk size
+   - Implement parallel processing for faster translation
+   - Consider caching mechanism to avoid re-translating identical text
+
+This approach will maintain analysis accuracy while significantly improving multilingual robustness. It will also simplify adding support for new languages, as only translation prompts would need to be added without modifying the analysis logic.
 
 ## Active Decisions
 - Using Python for implementation due to its rich ecosystem and simplicity
