@@ -69,6 +69,9 @@ class SecurityAnalyzer:
         Returns:
             Dict: Analysis results
         """
+        # Import progress tracker
+        from src.utils.progress_tracker import ProgressTracker
+        
         # Initialize analysis results
         analysis_results = {
             "target_path": extraction_results["target_path"],
@@ -83,6 +86,16 @@ class SecurityAnalyzer:
             "low_severity": 0,
             "results": []
         }
+        
+        # Count total vulnerabilities to analyze
+        total_vulnerabilities = 0
+        for file_result in extraction_results["results"]:
+            total_vulnerabilities += len(file_result["extractions"])
+        
+        # Initialize progress tracker if there are vulnerabilities to analyze
+        self.progress_tracker = None
+        if total_vulnerabilities > 0:
+            self.progress_tracker = ProgressTracker(total_vulnerabilities, "Analyzing vulnerabilities")
         
         # Process each file result
         for file_result in extraction_results["results"]:
@@ -138,6 +151,8 @@ class SecurityAnalyzer:
             # Add file analysis to results
             analysis_results["results"].append(file_analysis)
             analysis_results["files_analyzed"] += 1
+            
+            # Update progress is now handled in analyze_vulnerabilities_batch
         
         return analysis_results
     
@@ -292,6 +307,9 @@ class SecurityAnalyzer:
         Returns:
             List[Dict]: List of vulnerability analyses
         """
+        # Import progress tracker
+        from src.utils.progress_tracker import ProgressTracker
+        
         results = []
         
         # If no extractions, return empty list
@@ -301,6 +319,9 @@ class SecurityAnalyzer:
         # If only one extraction, use the single analysis method
         if len(extractions) == 1:
             results.append(self.analyze_vulnerability(extractions[0], file_path, language, report_language))
+            # Get progress tracker from parent class if available
+            if hasattr(self, 'progress_tracker') and self.progress_tracker:
+                self.progress_tracker.update(1)
             return results
         
         # Split extractions into batches
@@ -319,6 +340,10 @@ class SecurityAnalyzer:
                 batch_results = self.parse_batch_response(llm_response, batch, file_path, language, report_language)
                 results.extend(batch_results)
                 
+                # Update progress after each batch
+                if hasattr(self, 'progress_tracker') and self.progress_tracker:
+                    self.progress_tracker.update(len(batch))
+                
             except Exception as e:
                 logger.error(f"Error in batch analysis: {str(e)}")
                 logger.warning(f"Falling back to individual analysis for {len(batch)} vulnerabilities")
@@ -327,6 +352,10 @@ class SecurityAnalyzer:
                 for extraction in batch:
                     individual_analysis = self.analyze_vulnerability(extraction, file_path, language, report_language)
                     results.append(individual_analysis)
+                
+                # Update progress after fallback analysis
+                if hasattr(self, 'progress_tracker') and self.progress_tracker:
+                    self.progress_tracker.update(len(batch))
         
         return results
     

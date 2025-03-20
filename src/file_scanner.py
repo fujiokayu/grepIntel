@@ -57,6 +57,9 @@ class FileScanner:
             "results": []
         }
         
+        # Display scanning message
+        print("Scanning files...")
+        
         # Scan directory or file
         if os.path.isdir(target_path):
             self._scan_directory(target_path, language, framework)
@@ -84,6 +87,9 @@ class FileScanner:
                     self.results["files_scanned"] += 1
                     self.results["vulnerabilities_found"] += len(file_result["matches"])
                     self.results["results"].append(file_result)
+        
+        # Display completion message
+        print(f"Scan completed: {self.results['files_scanned']} files scanned, {self.results['vulnerabilities_found']} potential vulnerabilities detected")
         
         return self.results
     

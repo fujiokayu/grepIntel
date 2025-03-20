@@ -295,7 +295,7 @@ def main() -> int:
         # Calculate and print execution time
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"\n実行時間: {execution_time:.2f}秒")
+        print(f"\nExecution time: {execution_time:.2f} seconds")
         
         return 0
     
@@ -305,7 +305,7 @@ def main() -> int:
         # Calculate and print execution time even in case of error
         end_time = time.time()
         execution_time = end_time - start_time
-        print(f"\n実行時間: {execution_time:.2f}秒")
+        print(f"\nExecution time: {execution_time:.2f} seconds")
         
         return 1
 
