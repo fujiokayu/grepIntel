@@ -23,42 +23,42 @@ class PatternManager:
 
     def __init__(self):
         """Initialize a new PatternManager instance."""
-        # 言語ごとのパターン
+        # Patterns organized by language
         self.language_patterns: Dict[str, Dict[str, Dict[str, Any]]] = {}
-        # フレームワークごとのパターン
+        # Patterns organized by framework
         self.framework_patterns: Dict[str, Dict[str, Dict[str, Any]]] = {}
-        # 結合されたパターン（実際の検索に使用）
+        # Combined patterns (used for actual searching)
         self.combined_patterns: Dict[str, Dict[str, Dict[str, Any]]] = {}
-        # 後方互換性のために維持
+        # Maintained for backward compatibility
         self.patterns: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
     def _load_patterns_from_file(
         self, file_path: str, target_dict: Dict, key: str
     ) -> None:
         """
-        内部メソッド: ファイルからパターンをロードして指定された辞書に格納する
+        Internal method: Load patterns from a file and store them in the specified dictionary
 
         Args:
-            file_path (str): パターンファイルのパス
-            target_dict (Dict): パターンを格納する辞書
-            key (str): 辞書のキー（言語またはフレームワーク名）
+            file_path (str): Path to the pattern file
+            target_dict (Dict): Dictionary to store the patterns
+            key (str): Dictionary key (language or framework name)
 
         Raises:
-            FileNotFoundError: パターンファイルが存在しない場合
-            ValueError: パターンファイルの形式が無効な場合
+            FileNotFoundError: If the pattern file does not exist
+            ValueError: If the pattern file format is invalid
         """
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"Pattern file not found: {file_path}")
 
-        # 指定されたキーの辞書を初期化（存在しない場合）
+        # Initialize the dictionary for the specified key (if it doesn't exist)
         if key not in target_dict:
             target_dict[key] = {}
 
-        # パターンファイルを読み込む
+        # Load the pattern file
         with open(file_path, "r", encoding="utf-8") as file:
             content = file.read()
 
-        # パターンファイルを解析
+        # Parse the pattern file
         current_section = None
         current_description = None
         current_patterns = []
@@ -66,42 +66,42 @@ class PatternManager:
         for line in content.splitlines():
             line = line.strip()
 
-            # 空行をスキップ
+            # Skip empty lines
             if not line:
                 continue
 
-            # セクションヘッダーをチェック
+            # Check for section headers
             section_match = re.match(r"^\[(.*)\]$", line)
             if section_match:
-                # 前のセクションが存在する場合は保存
+                # Save the previous section if it exists
                 if current_section:
                     target_dict[key][current_section] = {
                         "description": current_description,
                         "patterns": current_patterns,
                     }
 
-                # 新しいセクションを開始
+                # Start a new section
                 current_section = section_match.group(1)
                 current_description = None
                 current_patterns = []
                 continue
 
-            # 説明をチェック
+            # Check for description
             if line.startswith("description:"):
                 current_description = line[len("description:") :].strip()
                 continue
 
-            # パターンリストをチェック
+            # Check for pattern list
             if line == "patterns:":
                 continue
 
-            # パターン項目をチェック
+            # Check for pattern items
             if line.startswith("- "):
                 pattern = line[2:].strip()
                 current_patterns.append(pattern)
                 continue
 
-        # 最後のセクションを保存
+        # Save the last section
         if current_section:
             target_dict[key][current_section] = {
                 "description": current_description,
@@ -110,52 +110,52 @@ class PatternManager:
 
     def load_language_patterns(self, file_path: str, language: str) -> None:
         """
-        言語固有のセキュリティパターンをファイルからロードする
+        Load language-specific security patterns from a file
 
         Args:
-            file_path (str): パターンファイルのパス
-            language (str): プログラミング言語識別子（例: 'php', 'java'）
+            file_path (str): Path to the pattern file
+            language (str): Programming language identifier (e.g., 'php', 'java')
 
         Raises:
-            FileNotFoundError: パターンファイルが存在しない場合
-            ValueError: パターンファイルの形式が無効な場合
+            FileNotFoundError: If the pattern file does not exist
+            ValueError: If the pattern file format is invalid
         """
         self._load_patterns_from_file(file_path, self.language_patterns, language)
-        # 後方互換性のために patterns も更新
+        # Update patterns for backward compatibility
         self._load_patterns_from_file(file_path, self.patterns, language)
-        # 結合パターンを更新
+        # Update combined patterns
         self._update_combined_patterns(language)
 
     def load_framework_patterns(
         self, file_path: str, framework: str, language: str
     ) -> None:
         """
-        フレームワーク固有のセキュリティパターンをファイルからロードする
+        Load framework-specific security patterns from a file
 
         Args:
-            file_path (str): パターンファイルのパス
-            framework (str): フレームワーク識別子（例: 'laravel', 'rails'）
-            language (str): 関連するプログラミング言語
+            file_path (str): Path to the pattern file
+            framework (str): Framework identifier (e.g., 'laravel', 'rails')
+            language (str): Associated programming language
 
         Raises:
-            FileNotFoundError: パターンファイルが存在しない場合
-            ValueError: パターンファイルの形式が無効な場合
+            FileNotFoundError: If the pattern file does not exist
+            ValueError: If the pattern file format is invalid
         """
         self._load_patterns_from_file(file_path, self.framework_patterns, framework)
-        # 結合パターンを更新
+        # Update combined patterns
         self._update_combined_patterns(language)
 
     def _update_combined_patterns(self, language: str) -> None:
         """
-        言語とフレームワークのパターンを結合する
+        Combine patterns from language and frameworks
 
         Args:
-            language (str): 結合するパターンの言語
+            language (str): Language for which to combine patterns
         """
         if language not in self.combined_patterns:
             self.combined_patterns[language] = {}
 
-        # 言語パターンをコピー
+        # Copy language patterns
         if language in self.language_patterns:
             for vuln_type, data in self.language_patterns[language].items():
                 if vuln_type not in self.combined_patterns[language]:
@@ -164,17 +164,17 @@ class PatternManager:
                         "patterns": data["patterns"].copy(),
                     }
                 else:
-                    # 既存のパターンリストを更新
+                    # Update existing pattern list
                     self.combined_patterns[language][vuln_type]["patterns"] = data[
                         "patterns"
                     ].copy()
 
-        # フレームワークパターンを追加
+        # Add framework patterns
         for framework, framework_data in self.framework_patterns.items():
             for vuln_type, data in framework_data.items():
-                # 既存の脆弱性タイプならパターンを追加
+                # Add patterns to existing vulnerability type
                 if vuln_type in self.combined_patterns[language]:
-                    # 重複を避けるために既存のパターンをチェック
+                    # Check existing patterns to avoid duplicates
                     existing_patterns = set(
                         self.combined_patterns[language][vuln_type]["patterns"]
                     )
@@ -183,7 +183,7 @@ class PatternManager:
                             self.combined_patterns[language][vuln_type][
                                 "patterns"
                             ].append(pattern)
-                # 新しい脆弱性タイプなら新規追加
+                # Add new vulnerability type if it doesn't exist
                 else:
                     self.combined_patterns[language][vuln_type] = {
                         "description": data["description"],
@@ -192,15 +192,15 @@ class PatternManager:
 
     def load_patterns_from_file(self, file_path: str, language: str) -> None:
         """
-        セキュリティパターンをファイルからロードする（後方互換性のため）
+        Load security patterns from a file (for backward compatibility)
 
         Args:
-            file_path (str): パターンファイルのパス
-            language (str): プログラミング言語識別子（例: 'php', 'java'）
+            file_path (str): Path to the pattern file
+            language (str): Programming language identifier (e.g., 'php', 'java')
 
         Raises:
-            FileNotFoundError: パターンファイルが存在しない場合
-            ValueError: パターンファイルの形式が無効な場合
+            FileNotFoundError: If the pattern file does not exist
+            ValueError: If the pattern file format is invalid
         """
         self.load_language_patterns(file_path, language)
 
@@ -208,14 +208,14 @@ class PatternManager:
         self, directory_path: str, is_framework: bool = False
     ) -> None:
         """
-        ディレクトリからすべてのパターンファイルをロードする
+        Load all pattern files from a directory
 
         Args:
-            directory_path (str): パターンファイルを含むディレクトリのパス
-            is_framework (bool): フレームワークパターンとしてロードするかどうか
+            directory_path (str): Path to the directory containing pattern files
+            is_framework (bool): Whether to load as framework patterns
 
         Raises:
-            FileNotFoundError: ディレクトリが存在しない場合
+            FileNotFoundError: If the directory does not exist
         """
         if not os.path.exists(directory_path):
             raise FileNotFoundError(f"Pattern directory not found: {directory_path}")
@@ -226,35 +226,35 @@ class PatternManager:
                 file_path = os.path.join(directory_path, filename)
 
                 if is_framework:
-                    # フレームワークパターンの場合、関連する言語を特定する必要がある
-                    # 実際の実装では、フレームワークと言語のマッピングを使用する
+                    # For framework patterns, we need to identify the associated language
+                    # In the actual implementation, we use a mapping of frameworks to languages
                     from src.config import FRAMEWORK_LANGUAGE_MAP
 
                     if name in FRAMEWORK_LANGUAGE_MAP:
                         language = FRAMEWORK_LANGUAGE_MAP[name]
                         self.load_framework_patterns(file_path, name, language)
                 else:
-                    # 言語パターンの場合
+                    # For language patterns
                     self.load_language_patterns(file_path, name)
 
     def get_patterns_for_language(self, language: str) -> Dict[str, Dict[str, Any]]:
         """
-        特定の言語のすべてのパターンを取得する
+        Get all patterns for a specific language
 
         Args:
-            language (str): プログラミング言語識別子（例: 'php', 'java'）
+            language (str): Programming language identifier (e.g., 'php', 'java')
 
         Returns:
-            Dict: 指定された言語のパターン辞書
+            Dict: Dictionary of patterns for the specified language
 
         Raises:
-            ValueError: 言語がサポートされていない場合
+            ValueError: If the language is not supported
         """
-        # 結合パターンを優先
+        # Prioritize combined patterns
         if language in self.combined_patterns:
             return self.combined_patterns[language]
 
-        # 後方互換性のため
+        # For backward compatibility
         if language not in self.patterns:
             raise ValueError(f"Unsupported language: {language}")
 
@@ -262,14 +262,14 @@ class PatternManager:
 
     def get_all_patterns(self) -> Dict[str, Dict[str, Dict[str, Any]]]:
         """
-        すべての言語のすべてのパターンを取得する
+        Get all patterns for all languages
 
         Returns:
-            Dict: 言語とセキュリティの側面によって整理されたすべてのパターンの辞書
+            Dict: Dictionary of all patterns organized by language and security aspect
         """
-        # 結合パターンを優先
+        # Prioritize combined patterns
         if self.combined_patterns:
             return self.combined_patterns
 
-        # 後方互換性のため
+        # For backward compatibility
         return self.patterns

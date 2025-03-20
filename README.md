@@ -1,6 +1,6 @@
 # GrepIntel
 
-GrepIntel is a command-line tool for white-box security vulnerability assessment. It automates the process of identifying potential security issues in source code by leveraging language-specific pattern matching and LLM-powered analysis.
+GrepIntel is a command-line tool for white-box security assessment. It automates the process of identifying potential security issues in source code by leveraging language-specific pattern matching and LLM-powered analysis.
 
 ## System Architecture
 
@@ -18,7 +18,7 @@ graph TD
     SA <--> LC[LLM Client]
     LC <--> API[LLM API]
     
-    classDef component fill:#cac,stroke:#333,stroke-width:2px,color:#000;
+    classDef component fill:#cfc,stroke:#333,stroke-width:1px,color:#000;
     classDef external fill:#bbf,stroke:#333,stroke-width:1px,color:#000;
     
     class PM,FS,CE,SA,RG,LC component;
