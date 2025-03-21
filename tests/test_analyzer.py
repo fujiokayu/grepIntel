@@ -65,11 +65,12 @@ class TestSecurityAnalyzer:
             },
         }
 
-        # Format prompt in Japanese
+        # Format prompt in Japanese - now always uses English for LLM communication
         prompt_ja = self.analyzer.format_prompt(extraction, "test.java", "java", "ja")
         assert "SQL_INJECTION" in prompt_ja
         assert "java" in prompt_ja
-        assert "Please respond in Japanese language" in prompt_ja
+        # No language instruction in new implementation
+        assert "Please respond in Japanese language" not in prompt_ja
 
     def test_parse_llm_response_vulnerable(self):
         """Test parsing LLM response for a vulnerable case."""
@@ -316,7 +317,7 @@ Use prepared statements.
             },
         ]
 
-        # Format batch prompt in Japanese
+        # Format batch prompt in Japanese - now always uses English for LLM communication
         prompt = self.analyzer.format_batch_prompt(
             extractions, "test.java", "java", "ja"
         )
@@ -329,7 +330,8 @@ Use prepared statements.
         assert "executeQuery" in prompt
         assert "response.getWriter" in prompt
         assert "ANALYSIS FOR VULNERABILITY X:" in prompt
-        assert "Please respond in Japanese language" in prompt
+        # No language instruction in new implementation
+        assert "Please respond in Japanese language" not in prompt
 
     def test_parse_batch_response(self):
         """Test parsing batch response."""

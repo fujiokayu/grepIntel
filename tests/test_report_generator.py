@@ -318,8 +318,8 @@ class TestReportGenerator:
     ):
         """Test generating a report with language-specific template."""
         # Mock template and formatted report
-        mock_load_template.return_value = "日本語テンプレート"
-        mock_format_report.return_value = "日本語でフォーマットされたレポート"
+        mock_load_template.return_value = "English template"
+        mock_format_report.return_value = "Formatted report in English"
 
         # Create test analysis results
         analysis_results = {
@@ -336,10 +336,15 @@ class TestReportGenerator:
         }
 
         # Generate report in Japanese
+        # Create a mock translator
+        mock_translator = MagicMock()
+        mock_translator.translate.return_value = "日本語に翻訳されたレポート"
+        self.report_generator.translator = mock_translator
+
         self.report_generator.generate(analysis_results, "report.md", "ja")
 
-        # Verify Japanese template was loaded
-        mock_load_template.assert_called_once_with("ja")
+        # Verify English template was loaded (new implementation always uses English template)
+        mock_load_template.assert_called_once_with("en")
 
         # Verify report was formatted with the template
         mock_format_report.assert_called_once()
@@ -347,5 +352,5 @@ class TestReportGenerator:
         # Verify report was written
         mock_file.assert_called_once_with("report.md", "w", encoding="utf-8")
         mock_file.return_value.__enter__.return_value.write.assert_called_once_with(
-            "日本語でフォーマットされたレポート"
+            "日本語に翻訳されたレポート"
         )
