@@ -16,6 +16,7 @@ graph TD
     
     IP[Intelligence Patterns] --> PM
     SA <--> LC[LLM Client]
+    RG <--> LC
     LC <--> API[LLM API]
     
     classDef component fill:#cfc,stroke:#333,stroke-width:1px,color:#000;
