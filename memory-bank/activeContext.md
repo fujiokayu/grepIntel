@@ -135,6 +135,7 @@ This implementation maintains analysis accuracy while significantly improving mu
 - Optimizing regex patterns by combining similar patterns to improve performance while maintaining detection capabilities
 - Adding execution time measurement to provide performance metrics for users
 - Using English for all LLM interactions and translating the final report for better multilingual support
+- Writing all code comments in English for better maintainability and collaboration
 
 ## Verification Practices
 - When running verification tests, use the following command-line options:

@@ -195,28 +195,30 @@ class ReportGenerator:
         # Generate vulnerability findings
         findings = self.generate_findings(analysis_results)
 
-        # Replace the placeholder with the findings
-        findings_placeholder = "{for each vulnerability}(.*?){end for}"
-        findings_template = re.search(findings_placeholder, report, re.DOTALL)
+        # 脆弱性の繰り返し部分を処理
+        findings_placeholder_pattern = r"\{for each vulnerability\}(.*?)\{end for\}"
+        findings_template_match = re.search(findings_placeholder_pattern, report, re.DOTALL)
 
-        if findings_template:
-            findings_section = findings_template.group(1)
+        if findings_template_match:
+            findings_template = findings_template_match.group(1)
             all_findings = ""
 
-            for i, finding in enumerate(findings):
-                finding_section = findings_section
+            for finding in findings:
+                # 各脆弱性に対してテンプレートをコピー
+                finding_section = findings_template
+
+                # 各プレースホルダーを置換
                 for key, value in finding.items():
-                    # 正規表現パターンの場合は特別な処理を行う
-                    if key == "pattern" and isinstance(value, str):
-                        # パターンはそのまま使用する（エスケープしない）
-                        pass
-                    # その他の文字列値の場合はエスケープする
-                    elif isinstance(value, str):
-                        value = value.replace("\\", "\\\\")
-                    finding_section = finding_section.replace(f"{{{key}}}", str(value))
+                    placeholder = "{" + key + "}"
+                    # 値を文字列に変換
+                    str_value = str(value)
+                    # プレースホルダーを置換
+                    finding_section = finding_section.replace(placeholder, str_value)
+
                 all_findings += finding_section
 
-            # Use string replacement instead of regex for the final substitution
+            # 最終的なレポートに脆弱性セクションを挿入
+            # 正規表現パターンと置換文字列を別々に処理
             parts = report.split("{for each vulnerability}")
             if len(parts) > 1:
                 end_parts = parts[1].split("{end for}")

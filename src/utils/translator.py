@@ -203,44 +203,68 @@ Maintain the original formatting, including markdown syntax, code blocks, and sp
         """
         from src.utils.progress_tracker import ProgressTracker
 
-        # Extract code blocks to protect them during translation
+        # 1. Identify markdown elements to protect
+        # Code blocks
         code_blocks = []
         code_block_pattern = r"```(?:[a-zA-Z]*\n)?(.*?)```"
 
         def replace_code_block(match):
             code_blocks.append(match.group(0))
-            return f"CODE_BLOCK_{len(code_blocks)-1}"
+            return f"__CODE_BLOCK_{len(code_blocks)-1}__"
 
         text_without_code = re.sub(
             code_block_pattern, replace_code_block, text, flags=re.DOTALL
         )
 
-        # Extract markdown headers to preserve them
+        # Headers
         headers = []
         header_pattern = r"^(#+\s+.*?)$"
 
         def replace_header(match):
             headers.append(match.group(0))
-            return f"HEADER_{len(headers)-1}"
+            return f"__HEADER_{len(headers)-1}__"
 
         text_without_headers = re.sub(
             header_pattern, replace_header, text_without_code, flags=re.MULTILINE
         )
 
-        # Now split the text into larger chunks for translation
-        chunks = self._split_into_chunks(text_without_headers)
+        # Tables
+        tables = []
+        table_pattern = r"(\|.*\|[\r\n]+\|[-:| ]+\|[\r\n]+(?:\|.*\|[\r\n]+)+)"
 
-        # Initialize progress tracker
-        progress_tracker = ProgressTracker(len(chunks), "Translating report")
+        def replace_table(match):
+            tables.append(match.group(0))
+            return f"__TABLE_{len(tables)-1}__"
 
-        # Translate each chunk
+        text_without_tables = re.sub(
+            table_pattern, replace_table, text_without_headers, flags=re.DOTALL
+        )
+
+        # List item markers
+        list_markers = []
+        list_marker_pattern = r"^(\s*[*-] )"
+
+        def replace_list_marker(match):
+            list_markers.append(match.group(0))
+            return f"__LIST_MARKER_{len(list_markers)-1}__ "
+
+        text_without_list_markers = re.sub(
+            list_marker_pattern, replace_list_marker, text_without_tables, flags=re.MULTILINE
+        )
+
+        # 2. Split text into chunks for translation
+        chunks = self._split_into_chunks(text_without_list_markers)
+
+        # 3. Translate each chunk
+        progress_tracker = ProgressTracker(len(chunks), "Translating markdown report")
         translated_chunks = []
+
         for i, chunk in enumerate(chunks):
             try:
-                # Format prompt for translation
+                # Create translation prompt
                 prompt = self.format_prompt(chunk, source_language, target_language)
 
-                # Get LLM translation
+                # Translate with LLM
                 logger.debug(
                     f"Sending translation prompt to LLM for chunk {i+1}/{len(chunks)}"
                 )
@@ -261,16 +285,25 @@ Maintain the original formatting, including markdown syntax, code blocks, and sp
                 translated_chunks.append(chunk)
                 progress_tracker.update(1)
 
-        # Combine translated chunks
+        # 4. Combine translated chunks
         translated_text = self._combine_chunks(translated_chunks)
+
+        # 5. Restore protected elements
+        # Restore list markers
+        for i, marker in enumerate(list_markers):
+            translated_text = translated_text.replace(f"__LIST_MARKER_{i}__ ", marker)
+
+        # Restore tables
+        for i, table in enumerate(tables):
+            translated_text = translated_text.replace(f"__TABLE_{i}__", table)
 
         # Restore headers
         for i, header in enumerate(headers):
-            translated_text = translated_text.replace(f"HEADER_{i}", header)
+            translated_text = translated_text.replace(f"__HEADER_{i}__", header)
 
         # Restore code blocks
         for i, code_block in enumerate(code_blocks):
-            translated_text = translated_text.replace(f"CODE_BLOCK_{i}", code_block)
+            translated_text = translated_text.replace(f"__CODE_BLOCK_{i}__", code_block)
 
         return translated_text
 
