@@ -62,14 +62,6 @@
 - Implemented vulnerability findings formatting
 - Added comprehensive unit tests
 - Integrated with the main application flow
-- Optimized translation process to reduce API requests and improve performance:
-  - Changed from two-stage translation to single-stage translation
-  - Reduced API requests by 60-70% for typical reports
-  - Improved execution time from ~220 seconds to ~90 seconds for sample reports
-- Enhanced markdown translation with structure-aware processing:
-  - Implemented protection for code blocks and headers during translation
-  - Added special handling to preserve markdown formatting
-  - Improved translation quality by maintaining document structure
 
 #### LLM Client Interfaces
 - Implemented abstract `LLMClient` interface for standardized LLM interactions

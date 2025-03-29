@@ -56,9 +56,6 @@
 - Added translation_prompt.txt with security terminology glossary
 - Updated report_generator.py to use translator for report content
 - Modified main.py to pass LLM client to ReportGenerator for translation
-- Optimized translation process to reduce API requests and improve performance
-- Modified report_generator.py to use single-stage translation instead of two-stage translation
-- Enhanced translator.py to preserve markdown structure during translation
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -104,19 +101,7 @@
    - Implemented progress tracking for translation process
    - Added error handling with fallback to original text if translation fails
 
-5. **Translation Process Optimization**:
-   - **Simplified Translation Pipeline**:
-     - Changed from two-stage translation (translate analysis results → format report → translate formatted report) to single-stage translation (format report → translate formatted report)
-     - Reduced API requests by 60-70% for typical reports
-     - Significantly improved execution time (from ~220 seconds to ~90 seconds for sample reports)
-   
-   - **Markdown Structure Preservation**:
-     - Enhanced markdown translation with structure-aware processing
-     - Implemented protection for code blocks and headers during translation
-     - Added special handling to preserve markdown formatting while reducing API requests
-     - Improved translation quality by maintaining document structure
-
-This implementation maintains analysis accuracy while significantly improving multilingual robustness and performance. It also simplifies adding support for new languages, as only translation prompts need to be updated without modifying the analysis logic.
+This implementation maintains analysis accuracy while significantly improving multilingual robustness. It also simplifies adding support for new languages, as only translation prompts need to be updated without modifying the analysis logic.
 
 ## Active Decisions
 - Using Python for implementation due to its rich ecosystem and simplicity
