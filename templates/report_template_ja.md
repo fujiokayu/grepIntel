@@ -8,7 +8,18 @@
 - **検出された脆弱性:** {total_vulnerabilities}
 
 ## エグゼクティブサマリー
-{summary}
+このセキュリティ評価では、{files_scanned}ファイル中に{total_vulnerabilities}件の潜在的なセキュリティ脆弱性が特定されました。
+{if_high_severity}そのうち、{high_severity_count}件は早急な対応が必要な高重要度の問題です。{end_if_high_severity}
+{if_medium_severity}{medium_severity_count}件は近い将来に対処すべき中重要度の問題です。{end_if_medium_severity}
+{if_low_severity}さらに、{low_severity_count}件の低重要度の問題が特定されました。{end_if_low_severity}
+{if_false_positives}また、分析では{false_positive_count}件の誤検出も特定されました。{end_if_false_positives}
+各脆弱性の詳細な説明、影響評価、および推奨される対策がこのレポートに記載されています。
+
+## 統計
+- **高重要度の問題:** {high_severity_count}
+- **中重要度の問題:** {medium_severity_count}
+- **低重要度の問題:** {low_severity_count}
+- **誤検出:** {false_positive_count}
 
 ## 脆弱性の発見
 
@@ -32,12 +43,6 @@
 
 ---
 {end for}
-
-## 統計
-- **高重要度の問題:** {high_severity_count}
-- **中重要度の問題:** {medium_severity_count}
-- **低重要度の問題:** {low_severity_count}
-- **誤検出:** {false_positive_count}
 
 ## 方法論
 このセキュリティ評価は、GrepIntelを使用して実施されました。GrepIntelは、パターンベースの識別とLLM駆動の分析を組み合わせて、ソースコード内の潜在的なセキュリティ脆弱性を検出するツールです。プロセスには以下が含まれます：

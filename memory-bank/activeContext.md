@@ -50,6 +50,10 @@
 - Added expanded command examples to README for better usability
 - Added Contributing section to README to encourage pattern contributions
 - Completed project documentation
+- Improved multilingual support: Modified SecurityAnalyzer's regex patterns to properly handle Japanese responses
+- Enhanced report template structure: Integrated executive summary directly into templates to resolve language-dependent issues
+- Implemented conditional sections: Added functionality to control display/hide based on statistics in reports
+- Optimized report structure: Moved statistics section to appear immediately after the executive summary
 
 ## Next Steps
 1. ✅ Set up Python 3.11+ with venv virtual environment
@@ -81,6 +85,8 @@
 - Implementing batch processing to analyze multiple vulnerabilities at once, reducing API calls. Using fixed-size batching with plans to explore vulnerability type-based grouping in the future. This improves execution time and optimizes token usage.
 - Optimizing regex patterns by combining similar patterns to improve performance while maintaining detection capabilities
 - Adding execution time measurement to provide performance metrics for users
+- Improved report template design: Adopted an approach that embeds language-specific content directly in templates instead of hardcoding in code
+- Implemented conditional content: Introduced conditional sections to display only existing vulnerability types, improving report readability
 
 ## Verification Practices
 - When running verification tests, use the following command-line options:

@@ -168,10 +168,20 @@ class ReportGenerator:
         report = report.replace(
             "{false_positive_count}", str(statistics["false_positives"])
         )
-
-        # Generate executive summary
-        summary = self.generate_summary(analysis_results, statistics)
-        report = report.replace("{summary}", summary)
+        
+        # 条件付きセクションを処理
+        for condition, value in [
+            ("if_high_severity", statistics["high_severity"] > 0),
+            ("if_medium_severity", statistics["medium_severity"] > 0),
+            ("if_low_severity", statistics["low_severity"] > 0),
+            ("if_false_positives", statistics["false_positives"] > 0),
+        ]:
+            if value:
+                # 条件が真の場合、条件タグを削除
+                report = re.sub(f"{{{condition}}}(.*?){{end_{condition}}}", r"\1", report, flags=re.DOTALL)
+            else:
+                # 条件が偽の場合、条件ブロック全体を削除
+                report = re.sub(f"{{{condition}}}.*?{{end_{condition}}}", "", report, flags=re.DOTALL)
 
         # Generate vulnerability findings
         findings = self.generate_findings(analysis_results)
@@ -206,37 +216,6 @@ class ReportGenerator:
 
         return report
 
-    def generate_summary(
-        self, analysis_results: Dict[str, Any], statistics: Dict[str, Any]
-    ) -> str:
-        """
-        Generate an executive summary
-
-        Args:
-            analysis_results: Results from the security analyzer
-            statistics: Statistics calculated from the analysis results
-
-        Returns:
-            str: Executive summary
-        """
-        summary = f"This security assessment identified {statistics['total_vulnerabilities']} "
-        summary += f"potential security vulnerabilities in {statistics['files_analyzed']} files. "
-
-        if statistics["high_severity"] > 0:
-            summary += f"Of these, {statistics['high_severity']} are high severity issues that require immediate attention. "
-
-        if statistics["medium_severity"] > 0:
-            summary += f"There are {statistics['medium_severity']} medium severity issues that should be addressed in the near future. "
-
-        if statistics["low_severity"] > 0:
-            summary += f"Additionally, {statistics['low_severity']} low severity issues were identified. "
-
-        if statistics["false_positives"] > 0:
-            summary += f"The analysis also identified {statistics['false_positives']} false positives. "
-
-        summary += "Each vulnerability is detailed in this report with an explanation, impact assessment, and recommended remediation steps."
-
-        return summary
 
     def generate_findings(
         self, analysis_results: Dict[str, Any]

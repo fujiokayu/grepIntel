@@ -81,31 +81,6 @@ class TestReportGenerator:
         assert statistics["files_analyzed"] == 5
         assert statistics["vulnerabilities_analyzed"] == 15
 
-    def test_generate_summary(self):
-        """Test generating an executive summary."""
-        # Create test analysis results and statistics
-        analysis_results = {}
-        statistics = {
-            "total_vulnerabilities": 10,
-            "false_positives": 5,
-            "high_severity": 3,
-            "medium_severity": 4,
-            "low_severity": 3,
-            "files_analyzed": 5,
-            "vulnerabilities_analyzed": 15,
-        }
-
-        # Generate summary
-        summary = self.report_generator.generate_summary(analysis_results, statistics)
-
-        # Verify summary
-        assert "10 potential security vulnerabilities" in summary
-        assert "5 files" in summary
-        assert "3 are high severity" in summary
-        assert "4 medium severity" in summary
-        assert "3 low severity" in summary
-        assert "5 false positives" in summary
-
     def test_generate_findings(self):
         """Test generating vulnerability findings."""
         # Create test analysis results

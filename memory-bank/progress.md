@@ -32,6 +32,8 @@
 - Added expanded command examples to README for better usability
 - Added Contributing section to README to encourage pattern contributions
 - Completed project documentation
+- Enhanced multilingual support: Fixed vulnerability detection issues in Japanese report generation
+- Optimized report template structure: Improved placement of executive summary and statistics sections
 
 ## In Progress
 - None at this stage
@@ -62,6 +64,9 @@
 - Implemented vulnerability findings formatting
 - Added comprehensive unit tests
 - Integrated with the main application flow
+- Added conditional section processing: Implemented control for displaying/hiding content based on statistics
+- Improved template structure: Integrated executive summary directly into templates to resolve language-dependent issues
+- Optimized report layout: Enhanced readability by repositioning the statistics section
 
 #### LLM Client Interfaces
 - Implemented abstract `LLMClient` interface for standardized LLM interactions
