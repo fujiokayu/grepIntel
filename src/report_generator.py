@@ -168,7 +168,7 @@ class ReportGenerator:
         report = report.replace(
             "{false_positive_count}", str(statistics["false_positives"])
         )
-        
+
         # 条件付きセクションを処理
         for condition, value in [
             ("if_high_severity", statistics["high_severity"] > 0),
@@ -178,10 +178,20 @@ class ReportGenerator:
         ]:
             if value:
                 # 条件が真の場合、条件タグを削除
-                report = re.sub(f"{{{condition}}}(.*?){{end_{condition}}}", r"\1", report, flags=re.DOTALL)
+                report = re.sub(
+                    f"{{{condition}}}(.*?){{end_{condition}}}",
+                    r"\1",
+                    report,
+                    flags=re.DOTALL,
+                )
             else:
                 # 条件が偽の場合、条件ブロック全体を削除
-                report = re.sub(f"{{{condition}}}.*?{{end_{condition}}}", "", report, flags=re.DOTALL)
+                report = re.sub(
+                    f"{{{condition}}}.*?{{end_{condition}}}",
+                    "",
+                    report,
+                    flags=re.DOTALL,
+                )
 
         # Generate vulnerability findings
         findings = self.generate_findings(analysis_results)
@@ -215,7 +225,6 @@ class ReportGenerator:
                     report = parts[0] + all_findings + end_parts[1]
 
         return report
-
 
     def generate_findings(
         self, analysis_results: Dict[str, Any]
