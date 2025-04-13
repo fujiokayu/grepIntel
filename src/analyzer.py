@@ -287,18 +287,28 @@ class SecurityAnalyzer:
 
         # Extract vulnerability assessment
         assessment_match = re.search(
-            r"(?:## Vulnerability Assessment|## 脆弱性評価|### 脆弱性評価)\s*\n([^\n]+)", response
+            r"(?:## Vulnerability Assessment|## 脆弱性評価|### 脆弱性評価)\s*\n([^\n]+)",
+            response,
         )
         if assessment_match:
             assessment = assessment_match.group(1).strip().lower()
             # 英語と日本語の両方に対応
-            analysis["is_vulnerable"] = any(keyword in assessment for keyword in [
-                "vulnerable", "脆弱", "脆弱性あり", "脆弱な", "脆弱である"
-            ])
+            analysis["is_vulnerable"] = any(
+                keyword in assessment
+                for keyword in [
+                    "vulnerable",
+                    "脆弱",
+                    "脆弱性あり",
+                    "脆弱な",
+                    "脆弱である",
+                ]
+            )
 
         # Extract explanation
         explanation_match = re.search(
-            r"(?:## Explanation|## 説明|### 説明)\s*\n(.*?)(?=\n##|\n###|\Z)", response, re.DOTALL
+            r"(?:## Explanation|## 説明|### 説明)\s*\n(.*?)(?=\n##|\n###|\Z)",
+            response,
+            re.DOTALL,
         )
         if explanation_match:
             analysis["explanation"] = explanation_match.group(1).strip()
@@ -306,7 +316,9 @@ class SecurityAnalyzer:
         # Extract impact (if vulnerable)
         if analysis["is_vulnerable"]:
             impact_match = re.search(
-                r"(?:## Impact|## 影響|### 影響).*?\n(.*?)(?=\n##|\n###|\Z)", response, re.DOTALL
+                r"(?:## Impact|## 影響|### 影響).*?\n(.*?)(?=\n##|\n###|\Z)",
+                response,
+                re.DOTALL,
             )
             if impact_match:
                 analysis["impact"] = impact_match.group(1).strip()
@@ -314,14 +326,18 @@ class SecurityAnalyzer:
         # Extract secure alternative (if vulnerable)
         if analysis["is_vulnerable"]:
             alternative_match = re.search(
-                r"(?:## Secure Alternative|## 安全な代替案|### 安全な代替案).*?\n```.*?\n(.*?)```", response, re.DOTALL
+                r"(?:## Secure Alternative|## 安全な代替案|### 安全な代替案).*?\n```.*?\n(.*?)```",
+                response,
+                re.DOTALL,
             )
             if alternative_match:
                 analysis["secure_alternative"] = alternative_match.group(1).strip()
 
         # Extract recommendation
         recommendation_match = re.search(
-            r"(?:## Recommendation|## 推奨事項|### 推奨事項)\s*\n(.*?)(?=\n##|\n###|\Z)", response, re.DOTALL
+            r"(?:## Recommendation|## 推奨事項|### 推奨事項)\s*\n(.*?)(?=\n##|\n###|\Z)",
+            response,
+            re.DOTALL,
         )
         if recommendation_match:
             analysis["recommendation"] = recommendation_match.group(1).strip()
