@@ -7,7 +7,6 @@ This module provides an implementation of the LLM client interface for Anthropic
 import os
 import logging
 import time
-from typing import Dict, Any, Optional, List
 
 import anthropic
 
@@ -33,6 +32,7 @@ class ClaudeClient(LLMClient):
             api_key: Anthropic API key
             model: Claude model to use
         """
+        super().__init__()  # Initialize the base class
         self.api_key = api_key
         self.model = model
         self.client = anthropic.Anthropic(api_key=api_key)
@@ -87,6 +87,17 @@ class ClaudeClient(LLMClient):
                 # Extract the response text
                 response_text = response.content[0].text
                 logger.debug("Received response from Claude")
+
+                # Log the interaction
+                self.log_interaction(
+                    prompt=truncated_prompt,
+                    response=response_text,
+                    metadata={
+                        "model": self.model,
+                        "max_tokens": max_tokens,
+                        "attempt": attempt + 1,
+                    },
+                )
 
                 return response_text
 
